@@ -14,52 +14,58 @@ const defaultImg =
   )
 
 export const StrainCard: React.FC<StrainCardProps> = ({ strain, selected, onSelect }) => {
-  const thcWidth = Math.min(100, Math.max(0, strain.thc))
-  const cbdWidth = Math.min(100, Math.max(0, strain.cbd))
+  const total = Math.max(1, strain.thc + strain.cbd)
+  const thcPct = (strain.thc / total) * 100
+  const cbdPct = (strain.cbd / total) * 100
 
   return (
     <button
       type="button"
-      className={`glass-card strain-card text-start ${selected ? 'selected' : ''}`}
+      className={`glass-card strain-card text-start position-relative overflow-hidden ${selected ? 'selected' : ''}`}
       onClick={() => onSelect?.(strain.id)}
+      style={{ background: 'rgba(255,255,255,0.7)' }}
     >
-      <div className="d-flex gap-3 align-items-start">
-        <img
-          src={strain.imageDataUrl || defaultImg}
-          alt={strain.name}
-          className="rounded object-fit-cover"
-          style={{ width: 96, height: 64 }}
-        />
-        <div className="flex-grow-1">
-          <div className="d-flex justify-content-between align-items-start">
-            <div>
-              <div className="fw-semibold text-dark-emphasis">{strain.name}</div>
-              <div className="small text-secondary">Vorrätig: {strain.stockGrams.toFixed(1)} g</div>
-            </div>
+      <div
+        aria-hidden
+        style={{
+          position: 'absolute',
+          inset: 0,
+          backgroundImage: `url(${strain.imageDataUrl || defaultImg})`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          opacity: 0.15,
+          filter: 'grayscale(20%)',
+        }}
+      />
+      <div className="position-relative">
+        <div className="d-flex justify-content-between align-items-start">
+          <div>
+            <div className="fw-semibold text-dark-emphasis">{strain.name}</div>
+            <div className="small text-secondary">Vorrätig: {strain.stockGrams.toFixed(1)} g</div>
           </div>
-
-          <div className="mt-2">
-            <div className="small text-secondary mb-1">THC / CBD</div>
-            <div className="ratio-bars">
-              <div className="ratio-bar thc" style={{ width: `${thcWidth}%` }} />
-              <div className="ratio-bar cbd" style={{ width: `${cbdWidth}%` }} />
-            </div>
-            <div className="d-flex justify-content-between small text-secondary mt-1">
-              <span>THC {strain.thc}%</span>
-              <span>CBD {strain.cbd}%</span>
-            </div>
-          </div>
-
-          {strain.info.length > 0 && (
-            <ul className="small text-secondary mb-0 mt-2 d-flex flex-wrap gap-2 list-unstyled">
-              {strain.info.map((i) => (
-                <li key={i} className="badge bg-light text-dark border">
-                  {i}
-                </li>
-              ))}
-            </ul>
-          )}
         </div>
+
+        <div className="mt-2">
+          <div className="small text-secondary mb-1">THC / CBD (relativ)</div>
+          <div className="ratio-bars" style={{ gridTemplateColumns: `${thcPct}% ${cbdPct}%` }}>
+            <div className="ratio-bar thc" />
+            <div className="ratio-bar cbd" />
+          </div>
+          <div className="d-flex justify-content-between small text-secondary mt-1">
+            <span>THC {strain.thc}%</span>
+            <span>CBD {strain.cbd}%</span>
+          </div>
+        </div>
+
+        {strain.info.length > 0 && (
+          <ul className="small text-secondary mb-0 mt-2 d-flex flex-wrap gap-2 list-unstyled">
+            {strain.info.map((i) => (
+              <li key={i} className="badge bg-light text-dark border">
+                {i}
+              </li>
+            ))}
+          </ul>
+        )}
       </div>
     </button>
   )

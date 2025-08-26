@@ -44,12 +44,12 @@
 /* --- CSC Verwaltung Theme --- */
 :root {
   --moss: #355e3b;
-  --moss-600: #4a7a54;
-  --moss-400: #7aa47a;
-  --beige: #f5f0e6;
-  --beige-500: #bfae94;
-  --glass-bg: rgba(255, 255, 255, 0.35);
-  --glass-border: rgba(255, 255, 255, 0.5);
+  --moss-600: #2f5234;
+  --moss-400: #6f8f77;
+  --beige: #faf6ef; /* lighter beige for more contrast */
+  --beige-500: #c9b89e;
+  --glass-bg: rgba(255, 255, 255, 0.55);
+  --glass-border: rgba(255, 255, 255, 0.7);
   --shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
 }
 
@@ -59,7 +59,7 @@ body {
 
 .app-shell {
   display: grid;
-  grid-template-columns: 280px 1fr;
+  grid-template-columns: 220px 1fr; /* narrower sidebar */
   min-height: 100vh;
 }
 
@@ -67,6 +67,9 @@ body {
   backdrop-filter: blur(10px);
   background: var(--glass-bg);
   border-right: 1px solid var(--glass-border);
+  align-self: start;
+  max-height: 100vh;
+  overflow: auto;
 }
 
 .content-area {
@@ -95,6 +98,20 @@ body {
 .glass-card.selected {
   outline: 2px solid var(--moss);
   background: rgba(53, 94, 59, 0.08);
+}
+
+/* Buttons: align primary/secondary to theme */
+.btn-success {
+  --bs-btn-bg: var(--moss);
+  --bs-btn-border-color: var(--moss);
+  --bs-btn-hover-bg: var(--moss-600);
+  --bs-btn-hover-border-color: var(--moss-600);
+}
+.btn-outline-secondary {
+  --bs-btn-color: #2f3b2a;
+  --bs-btn-border-color: #d1d5db;
+  --bs-btn-hover-bg: #f3f4f6;
+  --bs-btn-hover-border-color: #cbd5e1;
 }
 
 .brand {
@@ -143,4 +160,28 @@ body {
   justify-content: center;
   padding: 16px;
   z-index: 1050;
+}
+
+/* Modal sizing and layout */
+.modal-dialog.modal-lg.modal-content.glass-panel {
+  width: min(1100px, 96vw);
+}
+
+/* Number input: remove default spinners */
+input[type='number']::-webkit-outer-spin-button,
+input[type='number']::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+input[type='number'] {
+  appearance: textfield;
+  -moz-appearance: textfield;
+}
+
+/* Print styles */
+@media print {
+  .sidebar { display: none !important; }
+  .content-area { padding: 0 !important; }
+  .glass-panel, .glass-card { box-shadow: none; border-color: #ddd; background: white; }
+  .btn, .form-select, .form-control { display: none !important; }
 }
