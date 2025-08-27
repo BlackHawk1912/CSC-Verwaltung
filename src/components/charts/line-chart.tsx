@@ -28,16 +28,21 @@ export const LineChart: React.FC<LineChartProps> = ({ labels, datasets }) => {
           backgroundColor: d.color + '33',
           tension: 0.3,
           fill: true,
+          pointRadius: 3,
+          pointHoverRadius: 7,
+          pointHitRadius: 20,
         })),
       },
       options: {
         responsive: true,
+        maintainAspectRatio: false,
         plugins: { legend: { position: 'bottom' } },
+        interaction: { mode: 'nearest', intersect: false },
         scales: { y: { beginAtZero: true } },
       },
     })
     return () => chart.destroy()
   }, [labels, datasets])
 
-  return <canvas ref={ref} height={200} />
+  return <canvas ref={ref} style={{ height: '100%', width: '100%' }} />
 }

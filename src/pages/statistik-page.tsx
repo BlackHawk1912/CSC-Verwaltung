@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react'
+import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { PieChart } from '../components/charts/pie-chart'
 import { LineChart } from '../components/charts/line-chart'
 import { BarChart } from '../components/charts/bar-chart'
@@ -12,11 +12,15 @@ const beigeDark = '#bfae94'
 
 const mockToday: readonly Disbursement[] = (() => {
   const strains = ['Mooswald Indica', 'Beige Sativa', 'Hybrid Classic', 'Alpen Haze', 'Stadtpark Kush'] as const
-  const genders: Gender[] = ['m', 'w', 'd']
+  // Weighted cycle for ~60% m / 35% w / 5% d
+  const genderCycle: Gender[] = [
+    'm','w','m','m','w','m','m','w','m','m','w','m',
+    'm','w','m','m','w','m','d','w'
+  ]
   const rows: Disbursement[] = []
-  for (let i = 1; i <= 18; i++) {
+  for (let i = 1; i <= 24; i++) {
     const s = strains[i % strains.length]
-    const g = genders[i % genders.length]
+    const g = genderCycle[i % genderCycle.length]
     const grams = Number(((i * 0.37) % 3 + 0.3).toFixed(2))
     rows.push({
       id: String(i),
@@ -35,6 +39,8 @@ const weekdays = ['Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa', 'So'] as const
 
 export const StatistikPage: React.FC = () => {
   const [range, setRange] = useState<'24h' | '7d' | '4w'>('24h')
+  const tableRef = useRef<HTMLDivElement | null>(null)
+  const fadeWrapRef = useRef<HTMLDivElement | null>(null)
   const genderCounts = useMemo(() => {
     const counts: Record<Gender, number> = { m: 0, w: 0, d: 0 }
     mockToday.forEach((d) => (counts[d.gender] += d.grams))
@@ -53,44 +59,104 @@ export const StatistikPage: React.FC = () => {
       const labels = Array.from({ length: 24 }, (_, h) => `${String(h).padStart(2, '0')}:00`)
       const total = labels.map((_, i) => Math.round(2 + 3 * Math.sin(i / 3) + (i % 5)))
       const u21 = labels.map((_, i) => Math.max(0, Math.round(total[i] * 0.2 + (i % 2))))
-      const mwdM = labels.map((_, i) => Math.max(0, Math.round(total[i] * 0.45 + (i % 3))))
-      const mwdW = labels.map((_, i) => Math.max(0, Math.round(total[i] * 0.45 - (i % 2))))
-      const mwdD = labels.map((_, i) => Math.max(0, Math.round(total[i] * 0.1)))
+      const mwdM = labels.map((_, i) => Math.max(0, Math.round(total[i] * 0.6 + (i % 2))))
+      const mwdW = labels.map((_, i) => Math.max(0, Math.round(total[i] * 0.35 + (i % 3 === 0 ? 0 : -1))))
+      const mwdD = labels.map((_, i) => Math.max(0, Math.round(total[i] * 0.05)))
       return { labels, total, u21, mwdM, mwdW, mwdD }
     }
     if (range === '7d') {
       const labels = ['Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa', 'So']
       const total = [12, 14, 16, 13, 22, 28, 18]
       const u21 = [2, 3, 3, 2, 4, 6, 3]
-      const mwdM = [6, 7, 8, 6, 11, 14, 9]
-      const mwdW = [5, 6, 7, 6, 10, 12, 8]
-      const mwdD = [1, 1, 1, 1, 1, 2, 1]
+      const mwdM = total.map((t) => Math.round(t * 0.6))
+      const mwdW = total.map((t) => Math.round(t * 0.35))
+      const mwdD = total.map((t) => Math.max(0, Math.round(t * 0.05)))
       return { labels, total, u21, mwdM, mwdW, mwdD }
     }
     const labels = ['KW29', 'KW30', 'KW31', 'KW32']
     const total = [60, 72, 68, 80]
     const u21 = [12, 13, 11, 15]
-    const mwdM = [28, 34, 30, 37]
-    const mwdW = [26, 31, 29, 35]
-    const mwdD = [6, 7, 7, 8]
+    const mwdM = total.map((t) => Math.round(t * 0.6))
+    const mwdW = total.map((t) => Math.round(t * 0.35))
+    const mwdD = total.map((t) => Math.max(0, Math.round(t * 0.05)))
     return { labels, total, u21, mwdM, mwdW, mwdD }
   }, [range])
 
   const weekdayAverages = useMemo(() => [2.3, 2.8, 3.1, 2.5, 4.0, 5.2, 3.9], [])
 
+  const onScroll = () => {
+    const el = tableRef.current
+    const wrap = fadeWrapRef.current
+    if (!el || !wrap) return
+    const { scrollTop, scrollHeight, clientHeight } = el
+    const top = scrollTop <= 1
+    const bottom = scrollTop + clientHeight >= scrollHeight - 1
+    wrap.classList.toggle('at-top', top)
+    wrap.classList.toggle('at-bottom', bottom)
+  }
+
+  useEffect(() => {
+    // Initialize fade overlays visibility after first render
+    queueMicrotask(onScroll)
+  }, [])
+
+  useEffect(() => {
+    // Adapt top overlay height to the actual sticky header height so the fade remains visible
+    const wrap = fadeWrapRef.current
+    const el = tableRef.current
+    if (!wrap || !el) return
+    const thead = el.querySelector('thead') as HTMLTableSectionElement | null
+    const setHeaderHeight = () => {
+      const h = Math.ceil(thead?.getBoundingClientRect().height ?? 0)
+      wrap.style.setProperty('--table-header-height', `${h}px`)
+    }
+    setHeaderHeight()
+    const ro = typeof ResizeObserver !== 'undefined' && thead ? new ResizeObserver(setHeaderHeight) : null
+    if (thead && ro) ro.observe(thead)
+    window.addEventListener('resize', setHeaderHeight)
+    return () => {
+      window.removeEventListener('resize', setHeaderHeight)
+      if (thead && ro) ro.disconnect()
+    }
+  }, [])
+
   const columns: readonly ColumnDef<Disbursement>[] = [
     { header: 'Sorte', accessorKey: 'strainName' },
     {
-      header: 'Menge (g)',
+      header: 'Menge',
       accessorKey: 'grams',
-      cell: ({ getValue }: { getValue: () => unknown }) => Number(getValue() as number).toFixed(2),
+      cell: ({ getValue }: { getValue: () => unknown }) => {
+        const n = Number(getValue() as number)
+        const formatted = new Intl.NumberFormat('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(n)
+        return `${formatted} g`
+      },
     },
     {
       header: 'Ü21',
       accessorKey: 'over21',
-      cell: ({ getValue }: { getValue: () => unknown }) => (Boolean(getValue()) ? 'Ja' : 'Nein'),
+      cell: ({ getValue }: { getValue: () => unknown }) =>
+        Boolean(getValue()) ? (
+          <span className="material-symbols-outlined text-success" aria-label="Über 21">check_circle</span>
+        ) : null,
     },
-    { header: 'm/w/d', accessorKey: 'gender' },
+    {
+      header: 'Geschlecht',
+      accessorKey: 'gender',
+      cell: ({ getValue }: { getValue: () => unknown }) => {
+        const g = String(getValue() ?? '') as Gender | ''
+        const icon = g === 'm' ? 'male' : g === 'w' ? 'female' : g === 'd' ? 'transgender' : 'person'
+        const label = g === 'm' ? 'männlich' : g === 'w' ? 'weiblich' : g === 'd' ? 'divers' : 'unbekannt'
+        return (
+          <span
+            className="material-symbols-outlined text-secondary opacity-75"
+            aria-label={`Geschlecht: ${label}`}
+            title={`Geschlecht: ${label}`}
+          >
+            {icon}
+          </span>
+        )
+      },
+    },
   ]
 
   const exportCsv = () => {
@@ -136,63 +202,62 @@ export const StatistikPage: React.FC = () => {
         </div>
       </div>
 
-      <div className="row g-3">
-        <div className="col-md-4">
-          <div className="glass-panel p-3 h-100">
-            <h6 className="mb-3">Zusammensetzung (m/w/d)</h6>
-            <PieChart
-              labels={['männlich', 'weiblich', 'divers']}
-              values={[genderCounts.m, genderCounts.w, genderCounts.d]}
-              colors={[moss, mossLight, beigeDark]}
+      <div className="stats-grid">
+        <div className="glass-panel p-3 h-100">
+          <h6 className="mb-3">Geschlechterverteilung</h6>
+          <PieChart
+            labels={['männlich', 'weiblich', 'divers']}
+            values={[genderCounts.m, genderCounts.w, genderCounts.d]}
+            colors={[moss, mossLight, beigeDark]}
+          />
+        </div>
+
+        <div className="glass-panel p-3 h-100">
+          <h6 className="mb-3">Alter: unter 21 / über 21</h6>
+          <div className="progress" role="progressbar" aria-label="U21/Ü21">
+            <div className="progress-bar" style={{ width: `${over21.noPct}%`, backgroundColor: beigeDark }} />
+            <div className="progress-bar" style={{ width: `${over21.yesPct}%`, backgroundColor: moss }} />
+          </div>
+          <div className="d-flex justify-content-between small text-secondary mt-1">
+            <span>U21 {over21.noPct}%</span>
+            <span>Ü21 {over21.yesPct}%</span>
+          </div>
+        </div>
+
+        <div className="glass-panel p-3 span-2">
+          <h6 className="mb-3">Gesamtmenge (Zeitraum)</h6>
+          <div style={{ height: 260, minHeight: 200, maxHeight: 320 }}>
+            <LineChart
+              labels={lineData.labels}
+              datasets={[
+                { label: 'Gesamt', data: lineData.total, color: moss },
+                { label: 'U21', data: lineData.u21, color: beigeDark },
+                { label: 'm', data: lineData.mwdM, color: '#4a7a54' },
+                { label: 'w', data: lineData.mwdW, color: '#7aa47a' },
+                { label: 'd', data: lineData.mwdD, color: '#a9c1a1' },
+              ]}
             />
           </div>
         </div>
-        <div className="col-md-4">
-          <div className="glass-panel p-3 h-100">
-            <h6 className="mb-3">Ü21 / U21 (100%)</h6>
-            <div className="progress" role="progressbar" aria-label="Ü21/U21">
-              <div className="progress-bar" style={{ width: `${over21.yesPct}%`, backgroundColor: moss }}>Ü21 {over21.yesPct}%</div>
-              <div className="progress-bar" style={{ width: `${over21.noPct}%`, backgroundColor: beigeDark, color: '#1a1a1a' }}>U21 {over21.noPct}%</div>
-            </div>
-          </div>
-        </div>
-        <div className="col-md-4">
-          <div className="glass-panel p-3 h-100 d-flex flex-column">
-            <h6 className="mb-3">Hinweise</h6>
-            <p className="small mb-0 text-secondary">Zeitraum kann oben angepasst werden. Export gilt für gesamte Seite.</p>
-          </div>
-        </div>
-      </div>
 
-      <div className="glass-panel p-3">
-        <h6 className="mb-3">Gesamtmenge (Zeitraum)</h6>
-        <LineChart
-          labels={lineData.labels}
-          datasets={[
-            { label: 'Gesamt', data: lineData.total, color: moss },
-            { label: 'U21', data: lineData.u21, color: beigeDark },
-            { label: 'm', data: lineData.mwdM, color: '#4a7a54' },
-            { label: 'w', data: lineData.mwdW, color: '#7aa47a' },
-            { label: 'd', data: lineData.mwdD, color: '#a9c1a1' },
-          ]}
-        />
-      </div>
-
-      <div className="row g-3">
-        <div className="col-lg-4">
-          <div className="glass-panel p-3">
-            <h6 className="mb-3">Durchschnitt je Wochentag</h6>
-            <BarChart labels={weekdays as unknown as string[]} values={weekdayAverages} color={moss} />
-          </div>
+        <div className="glass-panel p-3 h-100">
+          <h6 className="mb-3">Durchschnitt je Wochentag</h6>
+          <BarChart labels={weekdays as unknown as string[]} values={weekdayAverages} color={moss} />
         </div>
 
-        <div className="col-lg-8">
-          <div className="glass-panel p-3">
-            <h6 className="mb-3">Heutige Ausgaben</h6>
+        <div className="glass-panel p-3 span-2">
+          <h6 className="mb-3">Heutige Ausgaben</h6>
+          <div ref={fadeWrapRef} className="position-relative fade-container">
             <SimpleTable
               data={mockToday}
               columns={columns}
+              containerStyle={{ maxHeight: 380, overflowY: 'auto' }}
+              containerClassName="custom-scroll"
+              onContainerScroll={onScroll}
+              onContainerRef={(el) => (tableRef.current = el)}
             />
+            <div className="fade-overlay-top" />
+            <div className="fade-overlay-bottom" />
           </div>
         </div>
       </div>

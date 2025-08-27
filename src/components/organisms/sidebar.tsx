@@ -7,15 +7,20 @@ export type SidebarProps = {
 
 export const Sidebar: React.FC<SidebarProps> = ({ onNeueAusgabe, activeKey }) => {
   const nav = [
-    { key: 'ausgabe', label: 'Ausgabe', icon: 'outbox', onClick: onNeueAusgabe },
     { key: 'start', label: 'Start', icon: 'home', onClick: undefined },
     { key: 'statistik', label: 'Statistik', icon: 'query_stats', onClick: undefined },
     { key: 'mitglieder', label: 'Mitglieder', icon: 'group', onClick: undefined },
   ] as const
 
   return (
-    <aside className="sidebar d-flex flex-column p-3 glass-panel">
-      <nav className="flex-grow-1 d-grid gap-1">
+    <aside className="sidebar d-flex flex-column p-3 custom-scroll">
+      <div className="mb-2">
+        <button type="button" className="btn btn-success w-100" onClick={onNeueAusgabe}>
+          Neue Ausgabe
+        </button>
+      </div>
+
+      <nav className="d-grid gap-1">
         {nav.map((n) => (
           <button
             key={n.key}
@@ -30,12 +35,6 @@ export const Sidebar: React.FC<SidebarProps> = ({ onNeueAusgabe, activeKey }) =>
           </button>
         ))}
       </nav>
-
-      <div className="mt-3">
-        <button type="button" className="btn btn-success w-100" onClick={onNeueAusgabe}>
-          Neue Ausgabe
-        </button>
-      </div>
     </aside>
   )
 }

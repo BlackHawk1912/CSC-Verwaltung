@@ -1,12 +1,17 @@
 import type { ColumnDef } from '@tanstack/react-table'
 import { flexRender, getCoreRowModel, useReactTable } from '@tanstack/react-table'
+import type { CSSProperties, UIEvent } from 'react'
 
 export type SimpleTableProps<T> = {
   data: readonly T[]
   columns: readonly ColumnDef<T, unknown>[]
+  containerStyle?: CSSProperties
+  containerClassName?: string
+  onContainerScroll?: (e: UIEvent<HTMLDivElement>) => void
+  onContainerRef?: (el: HTMLDivElement | null) => void
 }
 
-export function SimpleTable<T>({ data, columns }: SimpleTableProps<T>) {
+export function SimpleTable<T>({ data, columns, containerStyle, containerClassName, onContainerScroll, onContainerRef }: SimpleTableProps<T>) {
   const table = useReactTable<T>({
     data: data as T[],
     columns: columns as ColumnDef<T, unknown>[],
@@ -14,8 +19,13 @@ export function SimpleTable<T>({ data, columns }: SimpleTableProps<T>) {
   })
 
   return (
-    <div className="table-responsive glass-panel p-2">
-      <table className="table align-middle mb-0">
+    <div
+      className={`table-responsive ${containerClassName ?? ''}`}
+      style={containerStyle}
+      onScroll={onContainerScroll}
+      ref={onContainerRef ?? undefined}
+    >
+      <table className="table align-middle mb-0 table-striped table-borderless table-sticky-header">
         <thead>
           {table.getHeaderGroups().map((hg) => (
             <tr key={hg.id}>

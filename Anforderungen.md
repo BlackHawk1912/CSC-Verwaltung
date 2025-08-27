@@ -5,7 +5,6 @@ Wir brauchen eine Navigationsleiste (linker Rand) mit 2 Dummy Buttons, sowie ein
 # UI
 
 - State of the Art UI Design
-- Milchglas effekte, wie bei iOS 26
 - farbgestaltung helles beige + dunkleres moosgrün
 - Zielgruppe Beamte der Behörden und Mitarbeiter des Social Clubs
 
