@@ -3,7 +3,15 @@
 ## [Unreleased]
 
 - Statistik: Remove redundant "(100%)" from Ü21/U21 card header in `src/pages/statistik-page.tsx`.
+- Statistik: Move date range selector from page header into the line chart card header (right-aligned) in `src/pages/statistik-page.tsx`.
 - Charts: Pie shows always-visible percentage labels via lightweight inline plugin (no deps) in `src/components/charts/pie-chart.tsx`.
+ - UI: Improve `.btn-outline-secondary` hover contrast (keep text dark on light hover background) in `src/App.css`.
+ - Statistik: Add white separators between U21/Ü21 stacked progress segments to match pie section borders in `src/pages/statistik-page.tsx` and `src/App.css`.
+ - Tabelle (Heutige Ausgaben): Add "Uhrzeit" column and include time in CSV export in `src/pages/statistik-page.tsx`; type updated in `src/types/domain.ts`.
+ - StrainCard: THC/CBD ratio bars doubled thickness and given a white border for clearer separation in `src/App.css`.
+ - Tabellen: Klickbare Sortierung in Headern über `SimpleTable` mit TanStack Sorting hinzugefügt in `src/components/table/simple-table.tsx` (spaltenweise auf/ab, Indikator ▲/▼/↕).
+ - Tabellen: Sortierung für Spalten „Ü21“ und „Geschlecht“ deaktiviert in `src/pages/statistik-page.tsx`.
+ - StrainCard: THC/CBD-Trennlinie angepasst – innerer weißer Separator entfernt, stattdessen nur noch weiße Border an Balken in `src/App.css` und Höhe im Container auf 12px angepasst in `src/components/molecules/strain-card.tsx`.
 - Charts: Pie label badges now render with small rounded backgrounds (tooltip-like) for readability in `src/components/charts/pie-chart.tsx`.
 - Charts: Line increases hover tolerance (nearest non-intersect + larger hit radius) in `src/components/charts/line-chart.tsx`.
 - Charts: Constrain "Gesamtmenge" line chart height via parent container (200–320px) and `maintainAspectRatio: false` so it doesn't grow too tall on wide screens. See `src/pages/statistik-page.tsx` and `src/components/charts/line-chart.tsx`.

@@ -22,10 +22,13 @@ const mockToday: readonly Disbursement[] = (() => {
     const s = strains[i % strains.length]
     const g = genderCycle[i % genderCycle.length]
     const grams = Number(((i * 0.37) % 3 + 0.3).toFixed(2))
+    const hour = String((i - 1) % 24).padStart(2, '0')
+    const minute = String((i * 7) % 60).padStart(2, '0')
     rows.push({
       id: String(i),
       strainId: `s-${(i % strains.length) + 1}`,
       strainName: s,
+      time: `${hour}:${minute}`,
       grams,
       over21: i % 5 !== 0,
       gender: g,
@@ -84,6 +87,22 @@ export const StatistikPage: React.FC = () => {
 
   const weekdayAverages = useMemo(() => [2.3, 2.8, 3.1, 2.5, 4.0, 5.2, 3.9], [])
 
+  // Memoize chart props so they remain referentially stable across unrelated rerenders (e.g., modal open/close)
+  const pieLabels = useMemo(() => ['männlich', 'weiblich', 'divers'] as const, [])
+  const pieValues = useMemo(() => [genderCounts.m, genderCounts.w, genderCounts.d] as const, [genderCounts])
+  const pieColors = useMemo(() => [moss, mossLight, beigeDark] as const, [])
+
+  const lineDatasets = useMemo(
+    () => [
+      { label: 'Gesamt', data: lineData.total, color: moss },
+      { label: 'U21', data: lineData.u21, color: beigeDark },
+      { label: 'm', data: lineData.mwdM, color: '#4a7a54' },
+      { label: 'w', data: lineData.mwdW, color: '#7aa47a' },
+      { label: 'd', data: lineData.mwdD, color: '#a9c1a1' },
+    ] as const,
+    [lineData]
+  )
+
   const onScroll = () => {
     const el = tableRef.current
     const wrap = fadeWrapRef.current
@@ -122,6 +141,7 @@ export const StatistikPage: React.FC = () => {
 
   const columns: readonly ColumnDef<Disbursement>[] = [
     { header: 'Sorte', accessorKey: 'strainName' },
+    { header: 'Uhrzeit', accessorKey: 'time' },
     {
       header: 'Menge',
       accessorKey: 'grams',
@@ -134,6 +154,7 @@ export const StatistikPage: React.FC = () => {
     {
       header: 'Ü21',
       accessorKey: 'over21',
+      enableSorting: false,
       cell: ({ getValue }: { getValue: () => unknown }) =>
         Boolean(getValue()) ? (
           <span className="material-symbols-outlined text-success" aria-label="Über 21">check_circle</span>
@@ -142,6 +163,7 @@ export const StatistikPage: React.FC = () => {
     {
       header: 'Geschlecht',
       accessorKey: 'gender',
+      enableSorting: false,
       cell: ({ getValue }: { getValue: () => unknown }) => {
         const g = String(getValue() ?? '') as Gender | ''
         const icon = g === 'm' ? 'male' : g === 'w' ? 'female' : g === 'd' ? 'transgender' : 'person'
@@ -161,8 +183,8 @@ export const StatistikPage: React.FC = () => {
 
   const exportCsv = () => {
     const rows = [
-      ['Sorte', 'Menge (g)', 'Ü21', 'm/w/d'],
-      ...mockToday.map((d) => [d.strainName, d.grams.toFixed(2), d.over21 ? 'Ja' : 'Nein', d.gender]),
+      ['Sorte', 'Uhrzeit', 'Menge (g)', 'Ü21', 'm/w/d'],
+      ...mockToday.map((d) => [d.strainName, d.time, d.grams.toFixed(2), d.over21 ? 'Ja' : 'Nein', d.gender]),
     ] as const
     const csv = rows
       .map((r) =>
@@ -188,15 +210,6 @@ export const StatistikPage: React.FC = () => {
       <div className="d-flex justify-content-between align-items-center">
         <h5 className="mb-0">Statistik</h5>
         <div className="d-flex align-items-center gap-2">
-          <select
-            className="form-select form-select-sm w-auto"
-            value={range}
-            onChange={(e) => setRange(e.target.value as '24h' | '7d' | '4w')}
-          >
-            <option value="24h">Letzte 24h</option>
-            <option value="7d">7 Tage</option>
-            <option value="4w">4 Wochen</option>
-          </select>
           <button className="btn btn-outline-secondary btn-sm" onClick={() => window.print()}>Drucken</button>
           <button className="btn btn-success btn-sm" onClick={exportCsv}>Export CSV</button>
         </div>
@@ -205,17 +218,13 @@ export const StatistikPage: React.FC = () => {
       <div className="stats-grid">
         <div className="glass-panel p-3 h-100">
           <h6 className="mb-3">Geschlechterverteilung</h6>
-          <PieChart
-            labels={['männlich', 'weiblich', 'divers']}
-            values={[genderCounts.m, genderCounts.w, genderCounts.d]}
-            colors={[moss, mossLight, beigeDark]}
-          />
+          <PieChart labels={pieLabels as unknown as string[]} values={pieValues} colors={pieColors as unknown as string[]} />
         </div>
 
         <div className="glass-panel p-3 h-100">
           <h6 className="mb-3">Alter: unter 21 / über 21</h6>
           <div className="progress" role="progressbar" aria-label="U21/Ü21">
-            <div className="progress-bar" style={{ width: `${over21.noPct}%`, backgroundColor: beigeDark }} />
+            <div className="progress-bar separator-right" style={{ width: `${over21.noPct}%`, backgroundColor: beigeDark }} />
             <div className="progress-bar" style={{ width: `${over21.yesPct}%`, backgroundColor: moss }} />
           </div>
           <div className="d-flex justify-content-between small text-secondary mt-1">
@@ -225,18 +234,20 @@ export const StatistikPage: React.FC = () => {
         </div>
 
         <div className="glass-panel p-3 span-2">
-          <h6 className="mb-3">Gesamtmenge (Zeitraum)</h6>
+          <div className="d-flex justify-content-between align-items-center mb-3">
+            <h6 className="mb-0">Gesamtmenge (Zeitraum)</h6>
+            <select
+              className="form-select form-select-sm w-auto"
+              value={range}
+              onChange={(e) => setRange(e.target.value as '24h' | '7d' | '4w')}
+            >
+              <option value="24h">Letzte 24h</option>
+              <option value="7d">7 Tage</option>
+              <option value="4w">4 Wochen</option>
+            </select>
+          </div>
           <div style={{ height: 260, minHeight: 200, maxHeight: 320 }}>
-            <LineChart
-              labels={lineData.labels}
-              datasets={[
-                { label: 'Gesamt', data: lineData.total, color: moss },
-                { label: 'U21', data: lineData.u21, color: beigeDark },
-                { label: 'm', data: lineData.mwdM, color: '#4a7a54' },
-                { label: 'w', data: lineData.mwdW, color: '#7aa47a' },
-                { label: 'd', data: lineData.mwdD, color: '#a9c1a1' },
-              ]}
-            />
+            <LineChart labels={lineData.labels} datasets={lineDatasets as unknown as { label: string; data: number[]; color: string }[]} />
           </div>
         </div>
 

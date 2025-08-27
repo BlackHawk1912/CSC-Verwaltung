@@ -179,7 +179,7 @@ export const StrainCard: React.FC<StrainCardProps> = ({
               style={{
                 gridTemplateColumns: `${thcPct}% ${cbdPct}%`,
                 gap: 0,
-                height: 8,
+                height: 12,
               }}
             >
               <div

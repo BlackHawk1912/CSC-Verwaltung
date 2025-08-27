@@ -154,6 +154,13 @@ body {
   --bs-btn-border-color: var(--moss-400);
   --bs-btn-hover-bg: rgba(47, 82, 52, 0.08);
   --bs-btn-hover-border-color: var(--moss-600);
+  --bs-btn-hover-color: var(--moss-600); /* keep text dark for contrast on beige/hover bg */
+  --bs-btn-active-color: var(--moss-600);
+}
+
+/* Progress bars: white inner separators between stacked segments */
+.progress .progress-bar.separator-right {
+  box-shadow: inset -2px 0 0 #ffffff;
 }
 
 /* Stepper buttons small variant matching theme */
@@ -204,9 +211,10 @@ body {
   gap: 6px;
 }
 .ratio-bar {
-  height: 6px;
+  height: 12px; /* doubled thickness */
   border-radius: 999px;
   background: #e5e7eb;
+  border: 1px solid #ffffff; /* white border for clearer separation */
 }
 .ratio-bar.thc { background: var(--moss-600); }
 .ratio-bar.cbd { background: var(--beige-500); }

@@ -14,6 +14,7 @@ export type Disbursement = {
   readonly id: string
   readonly strainId: string
   readonly strainName: string
+  readonly time: string // HH:MM
   readonly grams: number
   readonly over21: boolean
   readonly gender: Gender

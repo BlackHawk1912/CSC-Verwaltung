@@ -1,5 +1,6 @@
-import type { ColumnDef } from '@tanstack/react-table'
-import { flexRender, getCoreRowModel, useReactTable } from '@tanstack/react-table'
+import type { ColumnDef, SortingState } from '@tanstack/react-table'
+import { flexRender, getCoreRowModel, getSortedRowModel, useReactTable } from '@tanstack/react-table'
+import { useState } from 'react'
 import type { CSSProperties, UIEvent } from 'react'
 
 export type SimpleTableProps<T> = {
@@ -12,10 +13,14 @@ export type SimpleTableProps<T> = {
 }
 
 export function SimpleTable<T>({ data, columns, containerStyle, containerClassName, onContainerScroll, onContainerRef }: SimpleTableProps<T>) {
+  const [sorting, setSorting] = useState<SortingState>([])
   const table = useReactTable<T>({
     data: data as T[],
     columns: columns as ColumnDef<T, unknown>[],
+    state: { sorting },
+    onSortingChange: setSorting,
     getCoreRowModel: getCoreRowModel(),
+    getSortedRowModel: getSortedRowModel(),
   })
 
   return (
@@ -29,9 +34,27 @@ export function SimpleTable<T>({ data, columns, containerStyle, containerClassNa
         <thead>
           {table.getHeaderGroups().map((hg) => (
             <tr key={hg.id}>
-              {hg.headers.map((h) => (
-                <th key={h.id}>{h.isPlaceholder ? null : flexRender(h.column.columnDef.header, h.getContext())}</th>
-              ))}
+              {hg.headers.map((h) => {
+                const sorted = h.column.getIsSorted()
+                const isSortable = h.column.getCanSort?.() ?? true
+                return (
+                  <th
+                    key={h.id}
+                    role={isSortable ? 'button' : undefined}
+                    onClick={isSortable ? h.column.getToggleSortingHandler() : undefined}
+                    style={{ cursor: isSortable ? 'pointer' : undefined, userSelect: 'none', whiteSpace: 'nowrap' }}
+                    aria-sort={sorted === 'asc' ? 'ascending' : sorted === 'desc' ? 'descending' : 'none'}
+                    title={isSortable ? 'Spalte sortieren' : undefined}
+                  >
+                    <span>{h.isPlaceholder ? null : flexRender(h.column.columnDef.header, h.getContext())}</span>
+                    {isSortable && (
+                      <span className="ms-1 text-secondary" aria-hidden="true">
+                        {sorted === 'asc' ? '▲' : sorted === 'desc' ? '▼' : '↕'}
+                      </span>
+                    )}
+                  </th>
+                )
+              })}
             </tr>
           ))}
         </thead>
