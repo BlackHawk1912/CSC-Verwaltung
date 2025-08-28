@@ -121,6 +121,21 @@ export const AusgabeModal: React.FC<AusgabeModalProps> = ({ open, onClose }) => 
         }
     }, [open, mounted]);
 
+    // Reset all inputs when closing
+    useEffect(() => {
+        if (open) return;
+        setSelectedId(null);
+        setGrams("");
+        setMember("");
+        setIdentification("");
+        setQuery("");
+        setAtTop(true);
+        setAtBottom(false);
+        setAnimatePick(false);
+        setAnimateList(false);
+        setGramsBump(false);
+    }, [open]);
+
     // prevent background scroll while modal is visible
     useEffect(() => {
         if (!mounted || leaving) return;
