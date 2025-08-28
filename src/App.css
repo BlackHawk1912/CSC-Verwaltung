@@ -330,6 +330,10 @@ body {
 /* Make top overlay extend below sticky header: header height + extra fade */
 .fade-overlay-top { height: calc(var(--table-header-height, 56px) + 24px); }
 
+/* Strain list: compact fades (top smaller, bottom larger) */
+.fade-container.compact-fade .fade-overlay-top { height: 20px; }
+.fade-container.compact-fade .fade-overlay-bottom { height: 36px; }
+
 /* Tables: keep header visible during scroll */
 .table-sticky-header thead th {
   position: sticky;

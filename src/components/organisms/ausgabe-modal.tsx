@@ -163,7 +163,7 @@ export const AusgabeModal: React.FC<AusgabeModalProps> = ({ open, onClose }) => 
                 />
               </div>
             </div>
-            <div className={`position-relative fade-container ${atTop ? 'at-top' : ''} ${atBottom ? 'at-bottom' : ''}`}>
+            <div className={`position-relative fade-container compact-fade ${atTop ? 'at-top' : ''} ${atBottom ? 'at-bottom' : ''}`}>
               <div
                 ref={listRef}
                 onScroll={onScroll}
@@ -179,7 +179,7 @@ export const AusgabeModal: React.FC<AusgabeModalProps> = ({ open, onClose }) => 
             </div>
           </div>
 
-          <div className="col-md-5" style={{ position: 'relative', paddingBottom: 64 }}>
+          <div className="col-md-5">
             <div className="mb-3">
               <label className="form-label">Menge</label>
               <div className={`input-group align-items-stretch ${gramsBump ? 'bump' : ''}`}>
@@ -237,13 +237,12 @@ export const AusgabeModal: React.FC<AusgabeModalProps> = ({ open, onClose }) => 
                 <div className="small text-secondary">Keine Sorte gewählt</div>
               )}
             </div>
-
-            <div className="d-flex justify-content-end gap-2 mt-3"
-                 style={{ position: 'absolute', left: 0, right: 0, bottom: 0, background: '#fff', paddingTop: 12, paddingBottom: 12, borderTop: '1px solid #e5e7eb' }}>
-              <button type="button" className="btn btn-outline-secondary" onClick={onClose}>Abbrechen</button>
-              <button type="button" className={`btn btn-success ${canSave ? 'can-save' : ''}`} onClick={save} disabled={!canSave}>Speichern</button>
-            </div>
           </div>
+        </div>
+
+        <div className="d-flex justify-content-end gap-2 mt-3">
+          <button type="button" className="btn btn-outline-secondary" onClick={onClose}>Abbrechen</button>
+          <button type="button" className={`btn btn-success ${canSave ? 'can-save' : ''}`} onClick={save} disabled={!canSave}>Speichern</button>
         </div>
       </div>
     </div>

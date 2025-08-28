@@ -6,6 +6,10 @@
 
 - Strain list: Fix right-side empty space by switching `.strain-grid` to `auto-fit` and centering content; made search bar container margins symmetric (left/right 16px) (`src/App.css`, `src/components/organisms/ausgabe-modal.tsx`).
 
+- Strain list: Make top fade overlay compact to match bottom; scoped via `.fade-container.compact-fade` and applied to the list in `src/components/organisms/ausgabe-modal.tsx` (styles in `src/App.css`).
+
+- Ausgabe-Modal: Move Abbrechen/Speichern into their own row below all content; removed absolute positioning from right column (`src/components/organisms/ausgabe-modal.tsx`).
+
 - StrainCard: Increase card `min-height` and bottom padding to ensure info chips are not clipped in the list (`src/App.css`).
 
 - Sidebar: Icons are now lighter than the text (but darker than before) including hover/active states (`src/App.css`).
