@@ -57,6 +57,9 @@
 - Refactor (Ausgabe-Modal): Replace inline margins with `mx-3`, inline `lineHeight` with `.lh-1`, adopt `.modal-surface`, and use utilities for list height/overflow (`src/components/organisms/ausgabe-modal.tsx`).
 - Refactor (Statistik): Extract typed `createColumns()` factory and memoize columns with `useMemo` to reduce component size and re-renders (`src/pages/statistik-page.tsx`).
 
+- UI: Make all input/textarea placeholder text lighter for clearer distinction via `--placeholder-color` and global `::placeholder` styles (`src/App.css`).
+- UI: Style default "Bitte auswählen …" of Identifikationsnachweis select as lighter placeholder using `.placeholder-select` (`src/components/organisms/ausgabe-modal.tsx`, `src/App.css`).
+
 - Fix: Resolve TS error by passing required boolean to `tooltipPosition(true)` in `src/components/charts/pie-chart.tsx`.
 
 - UI: Add glassmorphism theme and app shell styles in `src/App.css` and adjust `src/index.css` layout.

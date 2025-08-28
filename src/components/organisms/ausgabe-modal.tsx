@@ -200,7 +200,7 @@ export const AusgabeModal: React.FC<AusgabeModalProps> = ({ open, onClose }) => 
 
                 <div className="row g-4">
                     <div className="col-md-7">
-                        <label className="form-label">Sorte auswählen</label>
+                        <label className="form-label ps-3">Sorte auswählen</label>
                         <div className="position-relative mb-2 mx-3">
                             <div className="with-trailing-control">
                                 <input
@@ -229,10 +229,7 @@ export const AusgabeModal: React.FC<AusgabeModalProps> = ({ open, onClose }) => 
                                     </button>
                                 ) : (
                                     <span className="input-trailing-icon" aria-hidden>
-                                        <span
-                                            className="material-symbols-outlined lh-1"
-                                            style={{ fontSize: 18 }}
-                                        >
+                                        <span className="material-symbols-outlined lh-1" style={{ fontSize: 18 }}>
                                             search
                                         </span>
                                     </span>
@@ -314,7 +311,7 @@ export const AusgabeModal: React.FC<AusgabeModalProps> = ({ open, onClose }) => 
                         <div className="mb-3">
                             <label className="form-label">Identifikationsnachweis</label>
                             <select
-                                className="form-select"
+                                className={`form-select ${identification ? "" : "placeholder-select"}`}
                                 value={identification}
                                 onChange={e => setIdentification(e.target.value)}
                                 aria-label="Identifikationsnachweis auswählen"

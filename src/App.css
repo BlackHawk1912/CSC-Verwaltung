@@ -43,10 +43,33 @@
     --bs-primary: var(--moss);
     --bs-link-color: var(--moss);
     --bs-link-hover-color: var(--moss-600);
+    /* Lighter placeholder text for better distinction */
+    --placeholder-color: rgba(0, 0, 0, 0.45);
 }
 
 body {
     background: linear-gradient(135deg, #eef2e9, #f6efe3);
+}
+
+/* Placeholder styling (lighter) */
+input::placeholder,
+textarea::placeholder,
+.form-control::placeholder {
+    color: var(--placeholder-color) !important;
+    opacity: 1; /* override browser default lower opacity to control via color */
+}
+
+/* Lighter text only when select is not focused (closed). When focused/open, use normal color so the dropdown options aren't dimmed. */
+.placeholder-select:not(:focus) {
+    color: var(--placeholder-color) !important;
+}
+.placeholder-select:focus,
+.placeholder-select:focus-visible {
+    color: var(--bs-body-color, #212529) !important;
+}
+/* Ensure the dropdown options render with normal color */
+.placeholder-select option {
+    color: var(--bs-body-color, #212529);
 }
 
 .app-shell {
