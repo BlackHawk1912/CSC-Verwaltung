@@ -138,40 +138,90 @@ export const AusgabeModal: React.FC<AusgabeModalProps> = ({ open, onClose }) => 
   if (!mounted) return null
 
   return (
-    <div className={`modal-backdrop-custom ${leaving ? 'backdrop-leave' : 'backdrop-appear'}`}>
-      <div className={`modal-dialog modal-lg modal-content glass-panel p-4 ${leaving ? 'modal-leave' : 'modal-appear'}`}>
+    <div
+      className={`modal-backdrop-custom ${
+        leaving ? "backdrop-leave" : "backdrop-appear"
+      }`}
+    >
+      <div
+        className={`modal-dialog modal-lg modal-content glass-panel p-4 ${
+          leaving ? "modal-leave" : "modal-appear"
+        }`}
+      >
         <div className="d-flex justify-content-between align-items-center mb-2">
           <h5 className="mb-0">Neue Ausgabe</h5>
-          <button type="button" className="btn-close" aria-label="Close" onClick={onClose} />
+          <button
+            type="button"
+            className="btn-close"
+            aria-label="Close"
+            onClick={onClose}
+          />
         </div>
 
         <div className="row g-4">
           <div className="col-md-7">
             <div className="small text-secondary mb-2">Sorte auswählen</div>
-            <div className="position-relative mb-2" style={{ marginLeft: 16, marginRight: 16 }}>
-              <div className="input-group input-group-sm">
-                <span className="input-group-text bg-white">
-                  <span className="material-symbols-outlined" aria-hidden style={{ fontSize: 18, lineHeight: 1 }}>search</span>
-                </span>
+            <div
+              className="position-relative mb-2"
+              style={{ marginLeft: 16, marginRight: 16 }}
+            >
+              <div className="with-trailing-control">
                 <input
                   type="text"
                   className="form-control form-control-sm"
-                  placeholder="Sorte suchen …"
+                  placeholder="Suchen …"
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
-                  aria-label="Sorte suchen"
+                  aria-label="Suchen"
                 />
+                {query ? (
+                  <button
+                    type="button"
+                    className="input-trailing-btn"
+                    onClick={() => setQuery("")}
+                    title="Filter leeren"
+                    aria-label="Filter leeren"
+                  >
+                    <span
+                      className="material-symbols-outlined"
+                      aria-hidden
+                      style={{ fontSize: 18, lineHeight: 1 }}
+                    >
+                      close
+                    </span>
+                  </button>
+                ) : (
+                  <span className="input-trailing-icon" aria-hidden>
+                    <span
+                      className="material-symbols-outlined"
+                      style={{ fontSize: 18, lineHeight: 1 }}
+                    >
+                      search
+                    </span>
+                  </span>
+                )}
               </div>
             </div>
-            <div className={`position-relative fade-container compact-fade ${atTop ? 'at-top' : ''} ${atBottom ? 'at-bottom' : ''}`}>
+            <div
+              className={`position-relative fade-container compact-fade ${
+                atTop ? "at-top" : ""
+              } ${atBottom ? "at-bottom" : ""}`}
+            >
               <div
                 ref={listRef}
                 onScroll={onScroll}
-                className={`strain-grid custom-scroll ${animateList ? 'animate-appear' : ''}`}
-                style={{ height: '60vh', overflow: 'auto', padding: '16px' }}
+                className={`strain-grid custom-scroll ${
+                  animateList ? "animate-appear" : ""
+                }`}
+                style={{ height: "60vh", overflow: "auto", padding: "16px" }}
               >
                 {matches.map((s) => (
-                  <StrainCard key={s.id} strain={s} selected={s.id === selectedId} onSelect={setSelectedId} />
+                  <StrainCard
+                    key={s.id}
+                    strain={s}
+                    selected={s.id === selectedId}
+                    onSelect={setSelectedId}
+                  />
                 ))}
               </div>
               <div className="fade-overlay-top" />
@@ -182,7 +232,11 @@ export const AusgabeModal: React.FC<AusgabeModalProps> = ({ open, onClose }) => 
           <div className="col-md-5">
             <div className="mb-3">
               <label className="form-label">Menge</label>
-              <div className={`input-group align-items-stretch ${gramsBump ? 'bump' : ''}`}>
+              <div
+                className={`input-group align-items-stretch ${
+                  gramsBump ? "bump" : ""
+                }`}
+              >
                 <div className="with-suffix flex-grow-1">
                   <input
                     type="text"
@@ -190,13 +244,33 @@ export const AusgabeModal: React.FC<AusgabeModalProps> = ({ open, onClose }) => 
                     ref={inputRef}
                     className="form-control form-control-sm text-end"
                     value={grams}
-                    onChange={(e) => setGrams(e.target.value.replace(/[^0-9.,]/g, '').replace(/\./g, ','))}
+                    onChange={(e) =>
+                      setGrams(
+                        e.target.value
+                          .replace(/[^0-9.,]/g, "")
+                          .replace(/\./g, ",")
+                      )
+                    }
                     placeholder="0"
                   />
                   <span className="suffix-inside">g</span>
                 </div>
-                <button className="btn btn-outline-secondary btn-sm btn-stepper" type="button" onClick={() => bump(-0.1)} aria-label="minus 0.1">−</button>
-                <button className="btn btn-outline-secondary btn-sm btn-stepper" type="button" onClick={() => bump(0.1)} aria-label="plus 0.1">+</button>
+                <button
+                  className="btn btn-outline-secondary btn-sm btn-stepper"
+                  type="button"
+                  onClick={() => bump(-0.1)}
+                  aria-label="minus 0.1"
+                >
+                  −
+                </button>
+                <button
+                  className="btn btn-outline-secondary btn-sm btn-stepper"
+                  type="button"
+                  onClick={() => bump(0.1)}
+                  aria-label="plus 0.1"
+                >
+                  +
+                </button>
               </div>
             </div>
 
@@ -220,7 +294,9 @@ export const AusgabeModal: React.FC<AusgabeModalProps> = ({ open, onClose }) => 
                 onChange={(e) => setIdentification(e.target.value)}
                 aria-label="Identifikationsnachweis auswählen"
               >
-                <option value="" disabled>Bitte auswählen …</option>
+                <option value="" disabled>
+                  Bitte auswählen …
+                </option>
                 <option value="persönlich bekannt">Persönlich bekannt</option>
                 <option value="amtliches Dokument">Amtliches Dokument</option>
                 <option value="mitgliedsausweis">Mitgliedsausweis</option>
@@ -230,7 +306,11 @@ export const AusgabeModal: React.FC<AusgabeModalProps> = ({ open, onClose }) => 
             <div className="mb-3">
               <label className="form-label">Auswahl</label>
               {selected ? (
-                <div className={`selection-slot ${animatePick ? 'animate-in' : ''}`}>
+                <div
+                  className={`selection-slot ${
+                    animatePick ? "animate-in" : ""
+                  }`}
+                >
                   <StrainCard strain={selected} selected onSelect={undefined} />
                 </div>
               ) : (
@@ -241,10 +321,23 @@ export const AusgabeModal: React.FC<AusgabeModalProps> = ({ open, onClose }) => 
         </div>
 
         <div className="d-flex justify-content-end gap-2 mt-3">
-          <button type="button" className="btn btn-outline-secondary" onClick={onClose}>Abbrechen</button>
-          <button type="button" className={`btn btn-success ${canSave ? 'can-save' : ''}`} onClick={save} disabled={!canSave}>Speichern</button>
+          <button
+            type="button"
+            className="btn btn-outline-secondary"
+            onClick={onClose}
+          >
+            Abbrechen
+          </button>
+          <button
+            type="button"
+            className={`btn btn-success ${canSave ? "can-save" : ""}`}
+            onClick={save}
+            disabled={!canSave}
+          >
+            Speichern
+          </button>
         </div>
       </div>
     </div>
-  )
+  );
 }

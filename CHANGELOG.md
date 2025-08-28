@@ -10,6 +10,8 @@
 
 - Ausgabe-Modal: Move Abbrechen/Speichern into their own row below all content; removed absolute positioning from right column (`src/components/organisms/ausgabe-modal.tsx`).
 
+- Ausgabe-Modal: Strain search uses an embedded trailing icon that toggles between search (idle) and clear (×) when text is present; clear resets the filter (`src/components/organisms/ausgabe-modal.tsx`, `src/App.css`).
+
 - StrainCard: Increase card `min-height` and bottom padding to ensure info chips are not clipped in the list (`src/App.css`).
 
 - Sidebar: Icons are now lighter than the text (but darker than before) including hover/active states (`src/App.css`).
