@@ -5,6 +5,12 @@
   text-align: initial;
 }
 
+/* Backdrop appear/leave */
+@keyframes backdrop-in { from { opacity: 0; } to { opacity: 1; } }
+@keyframes backdrop-out { from { opacity: 1; } to { opacity: 0; } }
+.backdrop-appear { animation: backdrop-in 180ms ease; }
+.backdrop-leave { animation: backdrop-out 160ms ease forwards; }
+
 .logo {
   height: 6em;
   padding: 1.5em;
@@ -221,9 +227,15 @@ body {
 
 /* Ensure strain cards have enough height and fill container width */
 .strain-card {
-  min-height: 130px;
+  min-height: 152px; /* ensure enough room for chips */
   width: 100%;
-  padding: 8px;
+  padding: 10px 10px 14px; /* add extra bottom padding for chips */
+  transition: transform 140ms ease, box-shadow 140ms ease;
+}
+
+/* Subtle press feedback */
+.strain-card:active {
+  transform: scale(0.98);
 }
 
 /* Strain list: responsive grid that keeps cards side-by-side and prevents oversized cards */
@@ -256,6 +268,24 @@ body {
   justify-content: center;
   padding: 16px;
   z-index: 1050;
+}
+
+/* Modal appear animation */
+@keyframes modal-in {
+  from { opacity: 0; transform: translateY(6px) scale(0.98); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+.modal-appear {
+  animation: modal-in 180ms ease;
+}
+
+/* Modal leave animation */
+@keyframes modal-out {
+  from { opacity: 1; transform: translateY(0) scale(1); }
+  to { opacity: 0; transform: translateY(6px) scale(0.98); }
+}
+.modal-leave {
+  animation: modal-out 160ms ease forwards;
 }
 
 /* Fade out at bottom of scroll lists */
@@ -316,6 +346,44 @@ body {
   position: relative;
   z-index: 2; /* ensure above any internal overlays */
 }
+
+/* Selection appear animation */
+@keyframes fade-slide-in {
+  from { opacity: 0; transform: translateX(8px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+.selection-slot.animate-in {
+  animation: fade-slide-in 220ms ease;
+}
+
+/* List appear with slight stagger for children */
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.animate-appear > * { animation: fade-up 200ms ease both; }
+.animate-appear > *:nth-child(1) { animation-delay: 0ms; }
+.animate-appear > *:nth-child(2) { animation-delay: 25ms; }
+.animate-appear > *:nth-child(3) { animation-delay: 50ms; }
+.animate-appear > *:nth-child(4) { animation-delay: 75ms; }
+.animate-appear > *:nth-child(5) { animation-delay: 100ms; }
+.animate-appear > *:nth-child(6) { animation-delay: 125ms; }
+
+/* Bump effect for grams input group */
+@keyframes bump {
+  0% { transform: scale(1); }
+  30% { transform: scale(1.02); }
+  100% { transform: scale(1); }
+}
+.input-group.bump { animation: bump 160ms ease; }
+
+/* Save button pop when first becomes enabled */
+@keyframes pop {
+  0% { transform: scale(0.98); }
+  60% { transform: scale(1.03); }
+  100% { transform: scale(1); }
+}
+.btn.btn-success.can-save { animation: pop 200ms ease; }
 
 /* StrainCard: stock badge in top-right for better readability */
 .strain-card .stock-badge {

@@ -26,27 +26,59 @@ export const AusgabeModal: React.FC<AusgabeModalProps> = ({ open, onClose }) => 
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [grams, setGrams] = useState<string>('')
   const [member, setMember] = useState<string>('')
+  const [identification, setIdentification] = useState<string>('')
+  const [query, setQuery] = useState<string>('')
+  const [mounted, setMounted] = useState<boolean>(false)
+  const [leaving, setLeaving] = useState<boolean>(false)
   const listRef = useRef<HTMLDivElement | null>(null)
   const [atTop, setAtTop] = useState(true)
   const [atBottom, setAtBottom] = useState(false)
   const inputRef = useRef<HTMLInputElement | null>(null)
+  const [animatePick, setAnimatePick] = useState(false)
+  const [animateList, setAnimateList] = useState(false)
+  const [gramsBump, setGramsBump] = useState(false)
 
   const selected = useMemo(() => mockStrains.find((s) => s.id === selectedId) || null, [selectedId])
+  const canSave = !!selected && !!grams && !!member && !!identification
 
-  // prevent background scroll while modal is open
+  // Search: compute matches once for reuse in suggestions and filtered list
+  const matches = useMemo(() => {
+    const q = query.trim().toLowerCase()
+    if (!q) return mockStrains
+    return mockStrains.filter(
+      (s) =>
+        s.name.toLowerCase().includes(q) ||
+        s.info.some((i) => i.toLowerCase().includes(q))
+    )
+  }, [query])
+  // No dropdown suggestions; list filters live based on `query`.
+
+  // Mount/unmount handling for enter/leave animations
   useEffect(() => {
-    if (!open) return
+    if (open) {
+      setMounted(true)
+      setLeaving(false)
+    } else if (mounted) {
+      setLeaving(true)
+      const t = window.setTimeout(() => setMounted(false), 180)
+      return () => window.clearTimeout(t)
+    }
+  }, [open, mounted])
+
+  // prevent background scroll while modal is visible
+  useEffect(() => {
+    if (!mounted || leaving) return
     const prev = document.body.style.overflow
     document.body.style.overflow = 'hidden'
     return () => { document.body.style.overflow = prev }
-  }, [open])
+  }, [mounted, leaving])
 
-  // initialize fade overlay visibility on mount/open
+  // initialize fade overlay visibility on mount/visible
   useEffect(() => {
-    if (!open) return
+    if (!mounted || leaving) return
     // next tick to ensure listRef is rendered
     queueMicrotask(onScroll)
-  }, [open])
+  }, [mounted, leaving])
 
   const onScroll = () => {
     const el = listRef.current
@@ -56,10 +88,29 @@ export const AusgabeModal: React.FC<AusgabeModalProps> = ({ open, onClose }) => 
     setAtBottom(scrollTop + clientHeight >= scrollHeight - 1)
   }
 
+  // Animate the selection slot when a strain is picked
+  useEffect(() => {
+    if (!mounted || leaving) return
+    if (!selectedId) return
+    setAnimatePick(true)
+    const t = window.setTimeout(() => setAnimatePick(false), 260)
+    return () => window.clearTimeout(t)
+  }, [selectedId, mounted, leaving])
+
+  // Staggered list appear when query changes
+  useEffect(() => {
+    if (!mounted || leaving) return
+    setAnimateList(true)
+    const t = window.setTimeout(() => setAnimateList(false), 260)
+    return () => window.clearTimeout(t)
+  }, [query, mounted, leaving])
+
   const bump = (delta: number) => {
     const cur = parseLocale(grams)
     const next = Math.max(0, Math.round((cur + delta) * 100) / 100)
     setGrams(formatLocale(next))
+    setGramsBump(true)
+    window.setTimeout(() => setGramsBump(false), 200)
   }
 
   const parseLocale = (s: string) => {
@@ -77,17 +128,18 @@ export const AusgabeModal: React.FC<AusgabeModalProps> = ({ open, onClose }) => 
     const m = Number(member)
     if (!Number.isFinite(g) || g <= 0) return
     if (!Number.isInteger(m) || m <= 0) return
+    if (!identification) return
     // would call API here
     // await api.postDisbursement({ strainId: selected.id, grams: g, memberNumber: m })
     // for now, just close
     onClose()
   }
 
-  if (!open) return null
+  if (!mounted) return null
 
   return (
-    <div className="modal-backdrop-custom">
-      <div className="modal-dialog modal-lg modal-content glass-panel p-4">
+    <div className={`modal-backdrop-custom ${leaving ? 'backdrop-leave' : 'backdrop-appear'}`}>
+      <div className={`modal-dialog modal-lg modal-content glass-panel p-4 ${leaving ? 'modal-leave' : 'modal-appear'}`}>
         <div className="d-flex justify-content-between align-items-center mb-2">
           <h5 className="mb-0">Neue Ausgabe</h5>
           <button type="button" className="btn-close" aria-label="Close" onClick={onClose} />
@@ -96,14 +148,29 @@ export const AusgabeModal: React.FC<AusgabeModalProps> = ({ open, onClose }) => 
         <div className="row g-4">
           <div className="col-md-7">
             <div className="small text-secondary mb-2">Sorte auswählen</div>
+            <div className="position-relative mb-2" style={{ marginLeft: 16, marginRight: 24 }}>
+              <div className="input-group input-group-sm">
+                <span className="input-group-text bg-white">
+                  <span className="material-symbols-outlined" aria-hidden style={{ fontSize: 18, lineHeight: 1 }}>search</span>
+                </span>
+                <input
+                  type="text"
+                  className="form-control form-control-sm"
+                  placeholder="Sorte suchen …"
+                  value={query}
+                  onChange={(e) => setQuery(e.target.value)}
+                  aria-label="Sorte suchen"
+                />
+              </div>
+            </div>
             <div className={`position-relative fade-container ${atTop ? 'at-top' : ''} ${atBottom ? 'at-bottom' : ''}`}>
               <div
                 ref={listRef}
                 onScroll={onScroll}
-                className="strain-grid custom-scroll"
-                style={{ maxHeight: '72vh', overflow: 'auto', padding: '16px' }}
+                className={`strain-grid custom-scroll ${animateList ? 'animate-appear' : ''}`}
+                style={{ height: '60vh', overflow: 'auto', padding: '16px' }}
               >
-                {mockStrains.map((s) => (
+                {matches.map((s) => (
                   <StrainCard key={s.id} strain={s} selected={s.id === selectedId} onSelect={setSelectedId} />
                 ))}
               </div>
@@ -115,7 +182,7 @@ export const AusgabeModal: React.FC<AusgabeModalProps> = ({ open, onClose }) => 
           <div className="col-md-5" style={{ position: 'relative', paddingBottom: 64 }}>
             <div className="mb-3">
               <label className="form-label">Menge</label>
-              <div className="input-group align-items-stretch">
+              <div className={`input-group align-items-stretch ${gramsBump ? 'bump' : ''}`}>
                 <div className="with-suffix flex-grow-1">
                   <input
                     type="text"
@@ -146,9 +213,26 @@ export const AusgabeModal: React.FC<AusgabeModalProps> = ({ open, onClose }) => 
             </div>
 
             <div className="mb-3">
+              <label className="form-label">Identifikationsnachweis</label>
+              <select
+                className="form-select"
+                value={identification}
+                onChange={(e) => setIdentification(e.target.value)}
+                aria-label="Identifikationsnachweis auswählen"
+              >
+                <option value="" disabled>Bitte auswählen …</option>
+                <option value="persönlich bekannt">Persönlich bekannt</option>
+                <option value="amtliches Dokument">Amtliches Dokument</option>
+                <option value="mitgliedsausweis">Mitgliedsausweis</option>
+              </select>
+            </div>
+
+            <div className="mb-3">
               <label className="form-label">Auswahl</label>
               {selected ? (
-                <StrainCard strain={selected} selected onSelect={undefined} />
+                <div className={`selection-slot ${animatePick ? 'animate-in' : ''}`}>
+                  <StrainCard strain={selected} selected onSelect={undefined} />
+                </div>
               ) : (
                 <div className="small text-secondary">Keine Sorte gewählt</div>
               )}
@@ -157,7 +241,7 @@ export const AusgabeModal: React.FC<AusgabeModalProps> = ({ open, onClose }) => 
             <div className="d-flex justify-content-end gap-2 mt-3"
                  style={{ position: 'absolute', left: 0, right: 0, bottom: 0, background: '#fff', paddingTop: 12, paddingBottom: 12, borderTop: '1px solid #e5e7eb' }}>
               <button type="button" className="btn btn-outline-secondary" onClick={onClose}>Abbrechen</button>
-              <button type="button" className="btn btn-success" onClick={save} disabled={!selected || !grams || !member}>Speichern</button>
+              <button type="button" className={`btn btn-success ${canSave ? 'can-save' : ''}`} onClick={save} disabled={!canSave}>Speichern</button>
             </div>
           </div>
         </div>

@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+- Ausgabe-Modal: Pflicht-Dropdown „Identifikation nachgewiesen“ ohne Default (Optionen: „persönlich bekannt“, „amtliches Dokument“, „mitgliedsausweis“) hinzugefügt in `src/components/organisms/ausgabe-modal.tsx`.
+
+- Ausgabe-Modal: Animations – Auswahlkarte erscheint mit leichtem Fade/Slide rechts im Auswahlbereich; dezentes Press-Feedback auf Sortenkarten (`src/components/organisms/ausgabe-modal.tsx`, `src/App.css`).
+
 - Statistik: Remove redundant "(100%)" from Ü21/U21 card header in `src/pages/statistik-page.tsx`.
 - Statistik: Move date range selector from page header into the line chart card header (right-aligned) in `src/pages/statistik-page.tsx`.
 - Charts: Pie shows always-visible percentage labels via lightweight inline plugin (no deps) in `src/components/charts/pie-chart.tsx`.
@@ -12,6 +16,7 @@
  - Tabellen: Klickbare Sortierung in Headern über `SimpleTable` mit TanStack Sorting hinzugefügt in `src/components/table/simple-table.tsx` (spaltenweise auf/ab, Indikator ▲/▼/↕).
  - Tabellen: Sortierung für Spalten „Ü21“ und „Geschlecht“ deaktiviert in `src/pages/statistik-page.tsx`.
  - StrainCard: THC/CBD-Trennlinie angepasst – innerer weißer Separator entfernt, stattdessen nur noch weiße Border an Balken in `src/App.css` und Höhe im Container auf 12px angepasst in `src/components/molecules/strain-card.tsx`.
+ - Ausgabe-Modal: Suchfeld mit Autocomplete (Material Search Icon, Breite an Kartenraster ausgerichtet) und feste Listenhöhe hinzugefügt; Filter nach Name und Info-Tags in `src/components/organisms/ausgabe-modal.tsx`.
 - Charts: Pie label badges now render with small rounded backgrounds (tooltip-like) for readability in `src/components/charts/pie-chart.tsx`.
 - Charts: Line increases hover tolerance (nearest non-intersect + larger hit radius) in `src/components/charts/line-chart.tsx`.
 - Charts: Constrain "Gesamtmenge" line chart height via parent container (200–320px) and `maintainAspectRatio: false` so it doesn't grow too tall on wide screens. See `src/pages/statistik-page.tsx` and `src/components/charts/line-chart.tsx`.
