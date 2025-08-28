@@ -4,6 +4,14 @@
 
 - Docs: Update README to reflect current stack, scripts, structure, and conventions (`README.md`).
 
+- Refactor: Remove unnecessary type casts when passing props to chart components in `src/pages/statistik-page.tsx`.
+- Refactor: Drop redundant default export from `src/pages/statistik-page.tsx` (component is already a named export).
+- Refactor: Hoist `parseLocale`/`formatLocale` helpers to file scope in `src/components/organisms/ausgabe-modal.tsx` to avoid recreating per render.
+
+- Refactor: Replace custom input adorners with Bootstrap `input-group` in `src/components/organisms/ausgabe-modal.tsx` (search field and grams input). Removed redundant CSS helpers from `src/App.css`.
+
+- Revert: Restore inside-adornment UI (search icon/clear button and "g" suffix) in `src/components/organisms/ausgabe-modal.tsx`; reintroduce minimal CSS helpers in `src/App.css` for desired visuals.
+
 - Modal: Add close animation by delaying unmount and toggling leave classes; backdrop fade-out added (`src/components/organisms/ausgabe-modal.tsx`, `src/App.css`).
 
 - Strain list: Fix right-side empty space by switching `.strain-grid` to `auto-fit` and centering content; made search bar container margins symmetric (left/right 16px) (`src/App.css`, `src/components/organisms/ausgabe-modal.tsx`).
@@ -41,6 +49,13 @@
 - Charts: Make Pie/Bar canvases fill available card height by removing fixed canvas heights and setting `maintainAspectRatio: false`; canvas now uses 100% width/height (`src/components/charts/pie-chart.tsx`, `src/components/charts/bar-chart.tsx`).
 - Statistik: Chart cards for Pie/Bar use flex column, letting charts expand under headers without changing card size (`src/pages/statistik-page.tsx`).
 - Statistik: Age (U21/Ü21) labels are now placed directly under the centered progress bar within the same wrapper (`src/pages/statistik-page.tsx`).
+
+- Refactor (CSS): Merge duplicate `:root` blocks, remove Vite template leftovers (`.logo`, `.card`, `.read-the-docs`), and standardize Bootstrap palette variables in `src/App.css`.
+- Refactor (CSS): Introduce `.modal-surface` class to replace over-specific selector; applied to modal container in `src/components/organisms/ausgabe-modal.tsx`.
+- Refactor (CSS): Add lightweight utilities `.h-60vh`, `.min-h-160`, `.min-h-200`, `.max-h-380` to eliminate inline heights/overflows in `src/App.css`.
+- Refactor (Statistik): Replace inline flex styles with Bootstrap utilities; use new min-height utilities and remove inline container styles for the table (`src/pages/statistik-page.tsx`).
+- Refactor (Ausgabe-Modal): Replace inline margins with `mx-3`, inline `lineHeight` with `.lh-1`, adopt `.modal-surface`, and use utilities for list height/overflow (`src/components/organisms/ausgabe-modal.tsx`).
+- Refactor (Statistik): Extract typed `createColumns()` factory and memoize columns with `useMemo` to reduce component size and re-renders (`src/pages/statistik-page.tsx`).
 
 - Fix: Resolve TS error by passing required boolean to `tooltipPosition(true)` in `src/components/charts/pie-chart.tsx`.
 

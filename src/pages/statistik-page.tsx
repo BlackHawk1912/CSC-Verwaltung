@@ -10,6 +10,57 @@ const moss = "#355E3B";
 const mossLight = "#6f8f77";
 const beigeDark = "#bfae94";
 
+// Number formatting helpers (UI/CSV)
+const formatGramsUi = (n: number): string =>
+    new Intl.NumberFormat("de-DE", { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(n);
+const formatGramsCsv = (n: number): string => n.toFixed(2);
+
+// Column factory (typed, reusable)
+function createColumns(): readonly ColumnDef<Disbursement>[] {
+    return [
+        { header: "Sorte", accessorKey: "strainName" },
+        { header: "Uhrzeit", accessorKey: "time" },
+        {
+            header: "Menge",
+            accessorFn: (row: Disbursement) => row.grams,
+            id: "grams",
+            cell: ({ getValue }: { getValue: () => unknown }) => `${formatGramsUi(Number(getValue()))} g`,
+        },
+        {
+            header: "Ü21",
+            accessorFn: (row: Disbursement) => row.over21,
+            id: "over21",
+            enableSorting: false,
+            cell: ({ getValue }: { getValue: () => unknown }) =>
+                Boolean(getValue()) ? (
+                    <span className="material-symbols-outlined text-success" aria-label="Über 21">
+                        check_circle
+                    </span>
+                ) : null,
+        },
+        {
+            header: "Geschlecht",
+            accessorFn: (row: Disbursement) => row.gender,
+            id: "gender",
+            enableSorting: false,
+            cell: ({ getValue }: { getValue: () => unknown }) => {
+                const g = String(getValue() ?? "") as Gender | "";
+                const icon = g === "m" ? "male" : g === "w" ? "female" : g === "d" ? "transgender" : "person";
+                const label = g === "m" ? "männlich" : g === "w" ? "weiblich" : g === "d" ? "divers" : "unbekannt";
+                return (
+                    <span
+                        className="material-symbols-outlined text-secondary opacity-75"
+                        aria-label={`Geschlecht: ${label}`}
+                        title={`Geschlecht: ${label}`}
+                    >
+                        {icon}
+                    </span>
+                );
+            },
+        },
+    ] as const;
+}
+
 const mockToday: readonly Disbursement[] = (() => {
     const strains = ["Mooswald Indica", "Beige Sativa", "Hybrid Classic", "Alpen Haze", "Stadtpark Kush"] as const;
     // Weighted cycle for ~60% m / 35% w / 5% d
@@ -158,57 +209,12 @@ export const StatistikPage: React.FC = () => {
         };
     }, []);
 
-    const columns: readonly ColumnDef<Disbursement>[] = [
-        { header: "Sorte", accessorKey: "strainName" },
-        { header: "Uhrzeit", accessorKey: "time" },
-        {
-            header: "Menge",
-            accessorKey: "grams",
-            cell: ({ getValue }: { getValue: () => unknown }) => {
-                const n = Number(getValue() as number);
-                const formatted = new Intl.NumberFormat("de-DE", {
-                    minimumFractionDigits: 2,
-                    maximumFractionDigits: 2,
-                }).format(n);
-                return `${formatted} g`;
-            },
-        },
-        {
-            header: "Ü21",
-            accessorKey: "over21",
-            enableSorting: false,
-            cell: ({ getValue }: { getValue: () => unknown }) =>
-                Boolean(getValue()) ? (
-                    <span className="material-symbols-outlined text-success" aria-label="Über 21">
-                        check_circle
-                    </span>
-                ) : null,
-        },
-        {
-            header: "Geschlecht",
-            accessorKey: "gender",
-            enableSorting: false,
-            cell: ({ getValue }: { getValue: () => unknown }) => {
-                const g = String(getValue() ?? "") as Gender | "";
-                const icon = g === "m" ? "male" : g === "w" ? "female" : g === "d" ? "transgender" : "person";
-                const label = g === "m" ? "männlich" : g === "w" ? "weiblich" : g === "d" ? "divers" : "unbekannt";
-                return (
-                    <span
-                        className="material-symbols-outlined text-secondary opacity-75"
-                        aria-label={`Geschlecht: ${label}`}
-                        title={`Geschlecht: ${label}`}
-                    >
-                        {icon}
-                    </span>
-                );
-            },
-        },
-    ];
+    const columns = useMemo(() => createColumns(), []);
 
     const exportCsv = () => {
         const rows = [
             ["Sorte", "Uhrzeit", "Menge (g)", "Ü21", "m/w/d"],
-            ...mockToday.map(d => [d.strainName, d.time, d.grams.toFixed(2), d.over21 ? "Ja" : "Nein", d.gender]),
+            ...mockToday.map(d => [d.strainName, d.time, formatGramsCsv(d.grams), d.over21 ? "Ja" : "Nein", d.gender]),
         ] as const;
         const csv = rows
             .map(r =>
@@ -244,20 +250,16 @@ export const StatistikPage: React.FC = () => {
             </div>
 
             <div className="stats-grid">
-                <div className="glass-panel p-3 h-100" style={{ display: "flex", flexDirection: "column" }}>
+                <div className="glass-panel p-3 h-100 d-flex flex-column">
                     <h6 className="mb-3">Geschlechterverteilung</h6>
-                    <div style={{ flex: 1, minHeight: 160 }}>
-                        <PieChart
-                            labels={pieLabels as unknown as string[]}
-                            values={pieValues}
-                            colors={pieColors as unknown as string[]}
-                        />
+                    <div className="flex-grow-1 min-h-160">
+                        <PieChart labels={pieLabels} values={pieValues} colors={pieColors} />
                     </div>
                 </div>
 
-                <div className="glass-panel p-3 h-100" style={{ display: "flex", flexDirection: "column" }}>
+                <div className="glass-panel p-3 h-100 d-flex flex-column">
                     <h6 className="mb-3">Alter: unter 21 / über 21</h6>
-                    <div style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "center" }}>
+                    <div className="d-flex flex-column justify-content-center flex-grow-1">
                         <div className="progress w-100" role="progressbar" aria-label="U21/Ü21">
                             <div
                                 className="progress-bar separator-right"
@@ -275,7 +277,7 @@ export const StatistikPage: React.FC = () => {
                     </div>
                 </div>
 
-                <div className="glass-panel p-3 span-2" style={{ display: "flex", flexDirection: "column" }}>
+                <div className="glass-panel p-3 span-2 d-flex flex-column">
                     <div className="d-flex justify-content-between align-items-center mb-3">
                         <h6 className="mb-0">Gesamtmenge (Zeitraum)</h6>
                         <select
@@ -288,18 +290,15 @@ export const StatistikPage: React.FC = () => {
                             <option value="4w">4 Wochen</option>
                         </select>
                     </div>
-                    <div style={{ flex: 1, minHeight: 200 }}>
-                        <LineChart
-                            labels={lineData.labels}
-                            datasets={lineDatasets as unknown as { label: string; data: number[]; color: string }[]}
-                        />
+                    <div className="flex-grow-1 min-h-200">
+                        <LineChart labels={lineData.labels} datasets={lineDatasets} />
                     </div>
                 </div>
 
-                <div className="glass-panel p-3 h-100" style={{ display: "flex", flexDirection: "column" }}>
+                <div className="glass-panel p-3 h-100 d-flex flex-column">
                     <h6 className="mb-3">Durchschnitt je Wochentag</h6>
-                    <div style={{ flex: 1, minHeight: 160 }}>
-                        <BarChart labels={weekdays as unknown as string[]} values={weekdayAverages} color={moss} />
+                    <div className="flex-grow-1 min-h-160">
+                        <BarChart labels={weekdays} values={weekdayAverages} color={moss} />
                     </div>
                 </div>
 
@@ -309,8 +308,7 @@ export const StatistikPage: React.FC = () => {
                         <SimpleTable
                             data={mockToday}
                             columns={columns}
-                            containerStyle={{ maxHeight: 380, overflowY: "auto" }}
-                            containerClassName="custom-scroll"
+                            containerClassName="custom-scroll max-h-380 overflow-auto"
                             onContainerScroll={onScroll}
                             onContainerRef={el => (tableRef.current = el)}
                         />
@@ -323,4 +321,3 @@ export const StatistikPage: React.FC = () => {
     );
 };
 
-export default StatistikPage;

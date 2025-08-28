@@ -29,42 +29,6 @@
     animation: backdrop-out 160ms ease forwards;
 }
 
-.logo {
-    height: 6em;
-    padding: 1.5em;
-    will-change: filter;
-    transition: filter 300ms;
-}
-.logo:hover {
-    filter: drop-shadow(0 0 2em #646cffaa);
-}
-.logo.react:hover {
-    filter: drop-shadow(0 0 2em #61dafbaa);
-}
-
-@keyframes logo-spin {
-    from {
-        transform: rotate(0deg);
-    }
-    to {
-        transform: rotate(360deg);
-    }
-}
-
-@media (prefers-reduced-motion: no-preference) {
-    a:nth-of-type(2) .logo {
-        animation: logo-spin infinite 20s linear;
-    }
-}
-
-.card {
-    padding: 2em;
-}
-
-.read-the-docs {
-    color: #888;
-}
-
 /* --- CSC Verwaltung Theme --- */
 :root {
     --moss: #355e3b;
@@ -75,17 +39,14 @@
     --glass-bg: rgba(255, 255, 255, 0.55);
     --glass-border: rgba(255, 255, 255, 0.7);
     --shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
-}
-
-body {
-    background: linear-gradient(135deg, #eef2e9, #f6efe3);
-}
-
-:root {
     /* Align Bootstrap primary/link to moss palette (remove blue states) */
     --bs-primary: var(--moss);
     --bs-link-color: var(--moss);
     --bs-link-hover-color: var(--moss-600);
+}
+
+body {
+    background: linear-gradient(135deg, #eef2e9, #f6efe3);
 }
 
 .app-shell {
@@ -449,8 +410,22 @@ body {
     background-color: rgba(53, 94, 59, 0.65);
 }
 
+/* Utilities */
+.h-60vh {
+    height: 60vh;
+}
+.min-h-160 {
+    min-height: 160px;
+}
+.min-h-200 {
+    min-height: 200px;
+}
+.max-h-380 {
+    max-height: 380px;
+}
+
 /* Modal sizing and layout */
-.modal-dialog.modal-lg.modal-content.glass-panel {
+.modal-surface {
     width: min(1280px, 98vw);
     height: auto;
     max-height: 88vh;

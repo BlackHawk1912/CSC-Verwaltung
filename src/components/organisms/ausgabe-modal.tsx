@@ -13,6 +13,17 @@ export type AusgabeModalProps = {
     onClose: () => void;
 };
 
+// Helpers kept small and pure (KISS) and hoisted (DRY);
+// avoids recreating functions on every render.
+const parseLocale = (s: string): number => {
+    if (!s) return 0;
+    const cleaned = s.replace(/\s/g, "").replace(",", ".");
+    const n = Number(cleaned);
+    return Number.isFinite(n) ? n : 0;
+};
+
+const formatLocale = (n: number): string => (n ? n.toFixed(2).replace(".", ",") : "");
+
 const mockStrains: readonly Strain[] = [
     {
         id: "s-1",
@@ -81,7 +92,6 @@ export const AusgabeModal: React.FC<AusgabeModalProps> = ({ open, onClose }) => 
     const listRef = useRef<HTMLDivElement | null>(null);
     const [atTop, setAtTop] = useState(true);
     const [atBottom, setAtBottom] = useState(false);
-    const inputRef = useRef<HTMLInputElement | null>(null);
     const [animatePick, setAnimatePick] = useState(false);
     const [animateList, setAnimateList] = useState(false);
     const [gramsBump, setGramsBump] = useState(false);
@@ -161,15 +171,6 @@ export const AusgabeModal: React.FC<AusgabeModalProps> = ({ open, onClose }) => 
         window.setTimeout(() => setGramsBump(false), 200);
     };
 
-    const parseLocale = (s: string) => {
-        if (!s) return 0;
-        const cleaned = s.replace(/\s/g, "").replace(",", ".");
-        const n = Number(cleaned);
-        return Number.isFinite(n) ? n : 0;
-    };
-
-    const formatLocale = (n: number) => (n ? n.toFixed(2).replace(".", ",") : "");
-
     const save = () => {
         if (!selected) return;
         const g = parseLocale(grams);
@@ -188,7 +189,7 @@ export const AusgabeModal: React.FC<AusgabeModalProps> = ({ open, onClose }) => 
     return (
         <div className={`modal-backdrop-custom ${leaving ? "backdrop-leave" : "backdrop-appear"}`}>
             <div
-                className={`modal-dialog modal-lg modal-content glass-panel p-4 ${
+                className={`modal-dialog modal-lg modal-content glass-panel modal-surface p-4 ${
                     leaving ? "modal-leave" : "modal-appear"
                 }`}
             >
@@ -199,8 +200,8 @@ export const AusgabeModal: React.FC<AusgabeModalProps> = ({ open, onClose }) => 
 
                 <div className="row g-4">
                     <div className="col-md-7">
-                        <div className="small text-secondary mb-2">Sorte auswählen</div>
-                        <div className="position-relative mb-2" style={{ marginLeft: 16, marginRight: 16 }}>
+                        <label className="form-label">Sorte auswählen</label>
+                        <div className="position-relative mb-2 mx-3">
                             <div className="with-trailing-control">
                                 <input
                                     type="text"
@@ -219,9 +220,9 @@ export const AusgabeModal: React.FC<AusgabeModalProps> = ({ open, onClose }) => 
                                         aria-label="Filter leeren"
                                     >
                                         <span
-                                            className="material-symbols-outlined"
+                                            className="material-symbols-outlined lh-1"
                                             aria-hidden
-                                            style={{ fontSize: 18, lineHeight: 1 }}
+                                            style={{ fontSize: 18 }}
                                         >
                                             close
                                         </span>
@@ -229,8 +230,8 @@ export const AusgabeModal: React.FC<AusgabeModalProps> = ({ open, onClose }) => 
                                 ) : (
                                     <span className="input-trailing-icon" aria-hidden>
                                         <span
-                                            className="material-symbols-outlined"
-                                            style={{ fontSize: 18, lineHeight: 1 }}
+                                            className="material-symbols-outlined lh-1"
+                                            style={{ fontSize: 18 }}
                                         >
                                             search
                                         </span>
@@ -246,8 +247,7 @@ export const AusgabeModal: React.FC<AusgabeModalProps> = ({ open, onClose }) => 
                             <div
                                 ref={listRef}
                                 onScroll={onScroll}
-                                className={`strain-grid custom-scroll ${animateList ? "animate-appear" : ""}`}
-                                style={{ height: "60vh", overflow: "auto", padding: "16px" }}
+                                className={`strain-grid custom-scroll ${animateList ? "animate-appear" : ""} p-3 h-60vh overflow-auto`}
                             >
                                 {matches.map(s => (
                                     <StrainCard
@@ -271,7 +271,6 @@ export const AusgabeModal: React.FC<AusgabeModalProps> = ({ open, onClose }) => 
                                     <input
                                         type="text"
                                         inputMode="decimal"
-                                        ref={inputRef}
                                         className="form-control form-control-sm text-end"
                                         value={grams}
                                         onChange={e =>
