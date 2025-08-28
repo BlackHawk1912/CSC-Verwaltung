@@ -215,6 +215,11 @@ body {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 6px;
+  /* Soft dark-green drop shadow behind the combined pill */
+  filter:
+    drop-shadow(0 3px 6px rgba(16,36,24,0.45))
+    drop-shadow(0 8px 16px rgba(16,36,24,0.30));
+  margin-bottom: 2px; /* avoid visual overlap with labels below */
 }
 .ratio-bar {
   height: 12px; /* doubled thickness */
