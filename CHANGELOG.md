@@ -8,6 +8,8 @@
 
 - StrainCard: Increase card `min-height` and bottom padding to ensure info chips are not clipped in the list (`src/App.css`).
 
+- Sidebar: Icons are now lighter than the text (but darker than before) including hover/active states (`src/App.css`).
+
 - Ausgabe-Modal: Pflicht-Dropdown „Identifikation nachgewiesen“ ohne Default (Optionen: „persönlich bekannt“, „amtliches Dokument“, „mitgliedsausweis“) hinzugefügt in `src/components/organisms/ausgabe-modal.tsx`.
 
 - Ausgabe-Modal: Animations – Auswahlkarte erscheint mit leichtem Fade/Slide rechts im Auswahlbereich; dezentes Press-Feedback auf Sortenkarten (`src/components/organisms/ausgabe-modal.tsx`, `src/App.css`).
@@ -27,6 +29,9 @@
 - Charts: Line increases hover tolerance (nearest non-intersect + larger hit radius) in `src/components/charts/line-chart.tsx`.
 - Charts: Constrain "Gesamtmenge" line chart height via parent container (200–320px) and `maintainAspectRatio: false` so it doesn't grow too tall on wide screens. See `src/pages/statistik-page.tsx` and `src/components/charts/line-chart.tsx`.
 - Statistik: Refactor layout to CSS Grid (`.stats-grid`, `.span-2`) for dynamic auto-fit, reduced whitespace on ultrawide screens. See `src/App.css` and `src/pages/statistik-page.tsx`.
+
+- Charts: Make Pie/Bar canvases fill available card height by removing fixed canvas heights and setting `maintainAspectRatio: false`; canvas now uses 100% width/height (`src/components/charts/pie-chart.tsx`, `src/components/charts/bar-chart.tsx`).
+- Statistik: Chart cards for Pie/Bar use flex column, letting charts expand under headers without changing card size (`src/pages/statistik-page.tsx`).
 
 - Fix: Resolve TS error by passing required boolean to `tooltipPosition(true)` in `src/components/charts/pie-chart.tsx`.
 

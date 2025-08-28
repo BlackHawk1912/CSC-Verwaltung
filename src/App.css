@@ -191,6 +191,10 @@ body {
   color: #2f3b2a;
   text-decoration: none;
 }
+.sidebar-link .material-icons,
+.sidebar-link .material-symbols-outlined {
+  color: #4f6858; /* slightly darker, still lighter than text */
+}
 .sidebar-link.btn-link { text-decoration: none; }
 .sidebar-link:hover, .sidebar-link:focus {
   color: var(--moss);
@@ -198,11 +202,21 @@ body {
   text-decoration: none;
   box-shadow: none;
 }
+.sidebar-link:hover .material-icons,
+.sidebar-link:hover .material-symbols-outlined,
+.sidebar-link:focus .material-icons,
+.sidebar-link:focus .material-symbols-outlined {
+  color: rgba(47, 82, 52, 0.9); /* near moss but still a touch lighter */
+}
 .sidebar-link.active {
   color: var(--moss);
   font-weight: 700;
   background: rgba(53, 94, 59, 0.12);
   border-left: 3px solid var(--moss);
+}
+.sidebar-link.active .material-icons,
+.sidebar-link.active .material-symbols-outlined {
+  color: rgba(47, 82, 52, 0.95);
 }
 .sidebar .btn-link:active { color: var(--moss) !important; box-shadow: none !important; }
 
