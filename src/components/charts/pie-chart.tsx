@@ -84,6 +84,7 @@ export const PieChart: React.FC<PieChartProps> = ({ labels, values, colors }) =>
       },
       options: {
         responsive: true,
+        maintainAspectRatio: false,
         plugins: {
           legend: { position: 'bottom' },
         },
@@ -93,5 +94,6 @@ export const PieChart: React.FC<PieChartProps> = ({ labels, values, colors }) =>
     return () => chart.destroy()
   }, [labels, values, colors])
 
-  return <canvas ref={ref} height={160} />
+  return <canvas ref={ref} style={{ height: '100%', width: '100%' }} />
 }
+

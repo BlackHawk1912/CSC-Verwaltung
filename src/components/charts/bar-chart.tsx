@@ -26,6 +26,7 @@ export const BarChart: React.FC<BarChartProps> = ({ labels, values, color }) => 
       },
       options: {
         responsive: true,
+        maintainAspectRatio: false,
         plugins: { legend: { display: false } },
         scales: { y: { beginAtZero: true } },
       },
@@ -33,5 +34,5 @@ export const BarChart: React.FC<BarChartProps> = ({ labels, values, color }) => 
     return () => chart.destroy()
   }, [labels, values, color])
 
-  return <canvas ref={ref} height={160} />
+  return <canvas ref={ref} style={{ height: '100%', width: '100%' }} />
 }

@@ -216,24 +216,28 @@ export const StatistikPage: React.FC = () => {
       </div>
 
       <div className="stats-grid">
-        <div className="glass-panel p-3 h-100">
+        <div className="glass-panel p-3 h-100" style={{ display: 'flex', flexDirection: 'column' }}>
           <h6 className="mb-3">Geschlechterverteilung</h6>
-          <PieChart labels={pieLabels as unknown as string[]} values={pieValues} colors={pieColors as unknown as string[]} />
+          <div style={{ flex: 1, minHeight: 160 }}>
+            <PieChart labels={pieLabels as unknown as string[]} values={pieValues} colors={pieColors as unknown as string[]} />
+          </div>
         </div>
 
-        <div className="glass-panel p-3 h-100">
+        <div className="glass-panel p-3 h-100" style={{ display: 'flex', flexDirection: 'column' }}>
           <h6 className="mb-3">Alter: unter 21 / über 21</h6>
-          <div className="progress" role="progressbar" aria-label="U21/Ü21">
-            <div className="progress-bar separator-right" style={{ width: `${over21.noPct}%`, backgroundColor: beigeDark }} />
-            <div className="progress-bar" style={{ width: `${over21.yesPct}%`, backgroundColor: moss }} />
-          </div>
-          <div className="d-flex justify-content-between small text-secondary mt-1">
-            <span>U21 {over21.noPct}%</span>
-            <span>Ü21 {over21.yesPct}%</span>
+          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+            <div className="progress w-100" role="progressbar" aria-label="U21/Ü21">
+              <div className="progress-bar separator-right" style={{ width: `${over21.noPct}%`, backgroundColor: beigeDark }} />
+              <div className="progress-bar" style={{ width: `${over21.yesPct}%`, backgroundColor: moss }} />
+            </div>
+            <div className="d-flex justify-content-between small text-secondary mt-1">
+              <span>U21 {over21.noPct}%</span>
+              <span>Ü21 {over21.yesPct}%</span>
+            </div>
           </div>
         </div>
 
-        <div className="glass-panel p-3 span-2">
+        <div className="glass-panel p-3 span-2" style={{ display: 'flex', flexDirection: 'column' }}>
           <div className="d-flex justify-content-between align-items-center mb-3">
             <h6 className="mb-0">Gesamtmenge (Zeitraum)</h6>
             <select
@@ -246,14 +250,16 @@ export const StatistikPage: React.FC = () => {
               <option value="4w">4 Wochen</option>
             </select>
           </div>
-          <div style={{ height: 260, minHeight: 200, maxHeight: 320 }}>
+          <div style={{ flex: 1, minHeight: 200 }}>
             <LineChart labels={lineData.labels} datasets={lineDatasets as unknown as { label: string; data: number[]; color: string }[]} />
           </div>
         </div>
 
-        <div className="glass-panel p-3 h-100">
+        <div className="glass-panel p-3 h-100" style={{ display: 'flex', flexDirection: 'column' }}>
           <h6 className="mb-3">Durchschnitt je Wochentag</h6>
-          <BarChart labels={weekdays as unknown as string[]} values={weekdayAverages} color={moss} />
+          <div style={{ flex: 1, minHeight: 160 }}>
+            <BarChart labels={weekdays as unknown as string[]} values={weekdayAverages} color={moss} />
+          </div>
         </div>
 
         <div className="glass-panel p-3 span-2">

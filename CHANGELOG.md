@@ -32,6 +32,7 @@
 
 - Charts: Make Pie/Bar canvases fill available card height by removing fixed canvas heights and setting `maintainAspectRatio: false`; canvas now uses 100% width/height (`src/components/charts/pie-chart.tsx`, `src/components/charts/bar-chart.tsx`).
 - Statistik: Chart cards for Pie/Bar use flex column, letting charts expand under headers without changing card size (`src/pages/statistik-page.tsx`).
+- Statistik: Age (U21/Ü21) labels are now placed directly under the centered progress bar within the same wrapper (`src/pages/statistik-page.tsx`).
 
 - Fix: Resolve TS error by passing required boolean to `tooltipPosition(true)` in `src/components/charts/pie-chart.tsx`.
 
