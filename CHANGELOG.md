@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+- Modal: Add close animation by delaying unmount and toggling leave classes; backdrop fade-out added (`src/components/organisms/ausgabe-modal.tsx`, `src/App.css`).
+
+- Strain list: Fix right-side empty space by switching `.strain-grid` to `auto-fit` and centering content; made search bar container margins symmetric (left/right 16px) (`src/App.css`, `src/components/organisms/ausgabe-modal.tsx`).
+
+- StrainCard: Increase card `min-height` and bottom padding to ensure info chips are not clipped in the list (`src/App.css`).
+
 - Ausgabe-Modal: Pflicht-Dropdown „Identifikation nachgewiesen“ ohne Default (Optionen: „persönlich bekannt“, „amtliches Dokument“, „mitgliedsausweis“) hinzugefügt in `src/components/organisms/ausgabe-modal.tsx`.
 
 - Ausgabe-Modal: Animations – Auswahlkarte erscheint mit leichtem Fade/Slide rechts im Auswahlbereich; dezentes Press-Feedback auf Sortenkarten (`src/components/organisms/ausgabe-modal.tsx`, `src/App.css`).

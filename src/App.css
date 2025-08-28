@@ -241,10 +241,11 @@ body {
 /* Strain list: responsive grid that keeps cards side-by-side and prevents oversized cards */
 .strain-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(260px, 340px));
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); /* stretch tracks to fill row width */
   gap: 16px;
   align-content: start;
-  justify-content: start;
+  justify-content: start; /* align left to avoid right-side whitespace */
+  justify-items: stretch; /* cards fill their grid tracks */
 }
 
 /* Statistik: responsive auto-fit grid to avoid whitespace on wide screens */

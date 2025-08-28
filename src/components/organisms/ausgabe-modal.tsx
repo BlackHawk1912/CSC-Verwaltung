@@ -148,7 +148,7 @@ export const AusgabeModal: React.FC<AusgabeModalProps> = ({ open, onClose }) => 
         <div className="row g-4">
           <div className="col-md-7">
             <div className="small text-secondary mb-2">Sorte auswählen</div>
-            <div className="position-relative mb-2" style={{ marginLeft: 16, marginRight: 24 }}>
+            <div className="position-relative mb-2" style={{ marginLeft: 16, marginRight: 16 }}>
               <div className="input-group input-group-sm">
                 <span className="input-group-text bg-white">
                   <span className="material-symbols-outlined" aria-hidden style={{ fontSize: 18, lineHeight: 1 }}>search</span>
