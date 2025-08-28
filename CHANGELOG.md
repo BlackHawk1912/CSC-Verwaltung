@@ -25,14 +25,14 @@
 - Statistik: Remove redundant "(100%)" from Ü21/U21 card header in `src/pages/statistik-page.tsx`.
 - Statistik: Move date range selector from page header into the line chart card header (right-aligned) in `src/pages/statistik-page.tsx`.
 - Charts: Pie shows always-visible percentage labels via lightweight inline plugin (no deps) in `src/components/charts/pie-chart.tsx`.
- - UI: Improve `.btn-outline-secondary` hover contrast (keep text dark on light hover background) in `src/App.css`.
- - Statistik: Add white separators between U21/Ü21 stacked progress segments to match pie section borders in `src/pages/statistik-page.tsx` and `src/App.css`.
- - Tabelle (Heutige Ausgaben): Add "Uhrzeit" column and include time in CSV export in `src/pages/statistik-page.tsx`; type updated in `src/types/domain.ts`.
- - StrainCard: THC/CBD ratio bars doubled thickness and given a white border for clearer separation in `src/App.css`.
- - Tabellen: Klickbare Sortierung in Headern über `SimpleTable` mit TanStack Sorting hinzugefügt in `src/components/table/simple-table.tsx` (spaltenweise auf/ab, Indikator ▲/▼/↕).
- - Tabellen: Sortierung für Spalten „Ü21“ und „Geschlecht“ deaktiviert in `src/pages/statistik-page.tsx`.
- - StrainCard: THC/CBD-Trennlinie angepasst – innerer weißer Separator entfernt, stattdessen nur noch weiße Border an Balken in `src/App.css` und Höhe im Container auf 12px angepasst in `src/components/molecules/strain-card.tsx`.
- - Ausgabe-Modal: Suchfeld mit Autocomplete (Material Search Icon, Breite an Kartenraster ausgerichtet) und feste Listenhöhe hinzugefügt; Filter nach Name und Info-Tags in `src/components/organisms/ausgabe-modal.tsx`.
+- UI: Improve `.btn-outline-secondary` hover contrast (keep text dark on light hover background) in `src/App.css`.
+- Statistik: Add white separators between U21/Ü21 stacked progress segments to match pie section borders in `src/pages/statistik-page.tsx` and `src/App.css`.
+- Tabelle (Heutige Ausgaben): Add "Uhrzeit" column and include time in CSV export in `src/pages/statistik-page.tsx`; type updated in `src/types/domain.ts`.
+- StrainCard: THC/CBD ratio bars doubled thickness and given a white border for clearer separation in `src/App.css`.
+- Tabellen: Klickbare Sortierung in Headern über `SimpleTable` mit TanStack Sorting hinzugefügt in `src/components/table/simple-table.tsx` (spaltenweise auf/ab, Indikator ▲/▼/↕).
+- Tabellen: Sortierung für Spalten „Ü21“ und „Geschlecht“ deaktiviert in `src/pages/statistik-page.tsx`.
+- StrainCard: THC/CBD-Trennlinie angepasst – innerer weißer Separator entfernt, stattdessen nur noch weiße Border an Balken in `src/App.css` und Höhe im Container auf 12px angepasst in `src/components/molecules/strain-card.tsx`.
+- Ausgabe-Modal: Suchfeld mit Autocomplete (Material Search Icon, Breite an Kartenraster ausgerichtet) und feste Listenhöhe hinzugefügt; Filter nach Name und Info-Tags in `src/components/organisms/ausgabe-modal.tsx`.
 - Charts: Pie label badges now render with small rounded backgrounds (tooltip-like) for readability in `src/components/charts/pie-chart.tsx`.
 - Charts: Line increases hover tolerance (nearest non-intersect + larger hit radius) in `src/components/charts/line-chart.tsx`.
 - Charts: Constrain "Gesamtmenge" line chart height via parent container (200–320px) and `maintainAspectRatio: false` so it doesn't grow too tall on wide screens. See `src/pages/statistik-page.tsx` and `src/components/charts/line-chart.tsx`.
@@ -65,7 +65,7 @@
 - Modal: Two-column layout with scrollable strain list; custom +/- steppers for grams; additional mock strains in `src/components/organisms/ausgabe-modal.tsx`.
 
 - Statistik Table: Replace textual gender (m/w/d) with Material Icons (`male`, `female`, `transgender`) and use Material Icon `check_circle` for Ü21 green check (`src/pages/statistik-page.tsx`; icons loaded via `index.html`).
-  - UI polish: Gender icons use a lighter color and show a tooltip with the label on hover.
+    - UI polish: Gender icons use a lighter color and show a tooltip with the label on hover.
 
 - Statistik: Swap U21/Ü21 bar order so U21 is left and Ü21 is right in the progress bar (`src/pages/statistik-page.tsx`).
 
@@ -102,12 +102,14 @@
 - StrainCard: Improve typography (prominent name), add top-right stock badge, remove redundant THC/CBD labels in `src/components/molecules/strain-card.tsx`; add `.stock-badge` styles in `src/App.css`.
 
 ### Follow-up fixes
+
 - Sidebar: Top-aligned navigation (removed flex-grow) in both `Sidebar.tsx` and `sidebar.tsx`.
 - Statistik: Reduced Pie prominence (col-md-3 + maxWidth), expanded Ü21/U21 (col-md-9) in `src/pages/statistik-page.tsx`.
 - Modal: +/- steppers use solid secondary style; action buttons centered in `src/components/organisms/ausgabe-modal.tsx`.
 - StrainCard: Re-added THC/CBD labels; enforced min-height and full width via `.strain-card` in `src/App.css`.
-  
+
 ### UI polish (latest suggestions)
+
 - Theme: Dropped glass look for panels/cards; white surfaces with light borders in `src/App.css`.
 - Sidebar: Non-glass background, sticky; moss-tinted hover and stronger active contrast (`.sidebar-link`).
 - Modal: Body scroll locked while open; strain list gets fade-out mask via `.fade-scroll` in `src/components/organisms/ausgabe-modal.tsx` and `src/App.css`.
@@ -116,6 +118,7 @@
 - StrainCard: Removed translucent inline background to avoid glass; focus states clarified.
 
 ### UI polish (round 2)
+
 - Layout: App is now full-width (`#root` without max-width) and grid shell retained for responsive cards.
 - Focus/Links: Removed default blue focus/hover; moss-themed focus ring for `.form-control`, `.form-select`, `.btn`; set link colors to moss via CSS variables in `src/App.css`.
 - Scrollbars: Added lightweight custom scrollbar style `.custom-scroll` and applied to sidebar and strain list.
@@ -127,16 +130,20 @@
 - Statistik: Adjusted mock gender distribution to ~60/35/5 and aligned line datasets in `src/pages/statistik-page.tsx`.
 
 ### Popup adjustments
+
 - Modal size: Increased to ~88vh with max-height guard, and made content columnar/flex to use space efficiently (`src/App.css`).
 - Modal padding/spacing: Increased outer padding to `p-4`, row gap to `g-4`, and sticky footer with extra padding for comfortable tap targets (`src/components/organisms/ausgabe-modal.tsx`).
 - Strain list grid: Uses `repeat(auto-fill, minmax(240px, 1fr))` and tighter gaps so more cards appear side-by-side on wide screens (`ausgabe-modal.tsx`).
 - Card sizing: Reduced card min-height to avoid oversized cards in the grid (`.strain-card` in `src/App.css`).
 - Background images: Increased visibility with stronger gradient to preserve text contrast (`src/components/molecules/strain-card.tsx`).
- 
+
 ### Layout and spacing tweaks (latest)
+
 - Cards layout: Introduced `.strain-grid` to render strain cards side-by-side on wide screens with capped width (`grid-template-columns: repeat(auto-fill, minmax(260px, 340px))`) in `src/App.css`; applied in `src/components/organisms/ausgabe-modal.tsx`.
 - Modal actions: Moved Abbrechen/Speichern to bottom-right edge within the right column, pinned via absolute positioning for consistent placement in `src/components/organisms/ausgabe-modal.tsx`.
 - Spacing: Increased padding inside the scrollable strain list and card gap to improve whitespace in `src/components/organisms/ausgabe-modal.tsx` and `.strain-grid` in `src/App.css`.
+
 ### Notes
+
 - Install dependencies if not yet installed to resolve missing type declarations (e.g., `@tanstack/react-table`).
 - Remove duplicate PascalCase files (`Sidebar.tsx`, `StrainCard.tsx`) to avoid future casing conflicts.

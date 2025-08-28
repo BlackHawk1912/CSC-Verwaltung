@@ -28,7 +28,7 @@ Wir brauchen eine Navigationsleiste (linker Rand) mit 2 Dummy Buttons, sowie ein
 - Tabelle "Heutige Ausgaben" (sorte, menge, ü21 ja/nein, m/w/d)
 - Möglichkeit zum Export / Druck der Statistiken
 
-# Techstack 
+# Techstack
 
 - React
 - Typescript

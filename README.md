@@ -44,4 +44,3 @@ Material Symbols are loaded in `index.html`:
 ```
 
 ---
-
