@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+- Docs: Update README to reflect current stack, scripts, structure, and conventions (`README.md`).
+
 - Modal: Add close animation by delaying unmount and toggling leave classes; backdrop fade-out added (`src/components/organisms/ausgabe-modal.tsx`, `src/App.css`).
 
 - Strain list: Fix right-side empty space by switching `.strain-grid` to `auto-fit` and centering content; made search bar container margins symmetric (left/right 16px) (`src/App.css`, `src/components/organisms/ausgabe-modal.tsx`).
