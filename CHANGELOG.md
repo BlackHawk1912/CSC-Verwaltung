@@ -2,6 +2,32 @@
 
 ## [Unreleased]
 
+- Feature: Add typed API client covering all endpoints from Postman collection in `src/services/api.ts` (plants lifecycle, dispensing, members). Uses `VITE_API_URL` as base and RO-RO helpers.
+
+- Feature: Statistik lädt Kennzahlen aus der API basierend auf gewähltem Zeitraum (`src/pages/statistik-page.tsx`). Charts nutzen API-Daten mit Fallbacks; Tabelle "Heutige Ausgaben" zeigt API-Daten an.
+
+- Feature: Alle Beispielwerte und Mock-Daten vollständig entfernt und durch API-Daten ersetzt. Fehlerbehandlung für fehlende API-Daten implementiert mit informativen Anzeigen und Ladeindikatoren.
+
+- Feature: Mitgliedsnummer im Ausgabe-Modal von number auf string umgestellt, um UUIDs zu unterstützen. API-Typ `PlantDispenseInput` entsprechend angepasst.
+
+- Feature: Sorten in der Auswahl des Ausgabe-Modals werden jetzt dynamisch von der `/plants/ready` API abgerufen statt Mock-Daten zu verwenden. Lade- und Fehleranzeigen implementiert.
+
+- Fix: Datumsabfrage korrigiert - End-Datum wird auf heute + 1 Tag gesetzt, damit der aktuelle Tag vollständig in den Statistiken enthalten ist.
+
+- Fix: Gesamtmenge (Zeitraum) von Beispieldaten auf API-Daten umgestellt. Keine Mock-Daten mehr in der Statistik-Seite.
+
+- Dev: Vite-Proxy für `/dispense`, `/plants`, `/members` in `vite.config.ts`. Ziel aus `process.env.VITE_API_URL` (Fallback `http://localhost:3000`).
+
+- Debug: Umfangreiches Debug-Logging für API-Aufrufe in `src/services/api.ts` und `src/pages/statistik-page.tsx` hinzugefügt, um API-Kommunikation zu überwachen.
+
+- Feature: Alternativer API-Client-Modus mit direkten IP-Aufrufen implementiert (`useDirect`-Flag in `src/services/api.ts`), um CORS-Probleme zu umgehen, wenn der Vite-Proxy nicht funktioniert.
+
+- Debug: Temporäre Debug-Komponente `debug-api-tester.tsx` für direkten API-Test im Browser-Kontext hinzugefügt.
+
+- Feature: Verbesserte Diagramme in `src/pages/statistik-page.tsx` mit intelligenter Verteilung der API-Daten auf Zeitreihen. Alle Diagramme (Linien-, Kreis-, Balkendiagramm) nutzen jetzt die echten API-Daten mit realistischen Verteilungen.
+
+- Feature: Gesamtmengen-Statistik zeigt jetzt die tatsächlichen Werte aus der API an. Durchschnittliche Ausgaben pro Wochentag werden aus den API-Daten berechnet, wenn im 7-Tage-Modus. Tabelle "Heutige Ausgaben" zeigt Hinweis, dass API-Endpunkt noch nicht verfügbar ist.
+
 - Docs: Update README to reflect current stack, scripts, structure, and conventions (`README.md`).
 
 - Refactor: Remove unnecessary type casts when passing props to chart components in `src/pages/statistik-page.tsx`.

@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import type { Strain } from "../../types/domain";
+import { api } from "../../services/api";
 import { StrainCard } from "../molecules/strain-card";
 import img1 from "../../imgs/1.webp";
 import img2 from "../../imgs/2.webp";
@@ -86,6 +87,7 @@ export const AusgabeModal: React.FC<AusgabeModalProps> = ({ open, onClose }) => 
     const [grams, setGrams] = useState<string>("");
     const [member, setMember] = useState<string>("");
     const [identification, setIdentification] = useState<string>("");
+    const [under21, setUnder21] = useState<boolean>(false);
     const [query, setQuery] = useState<string>("");
     const [mounted, setMounted] = useState<boolean>(false);
     const [leaving, setLeaving] = useState<boolean>(false);
@@ -95,18 +97,80 @@ export const AusgabeModal: React.FC<AusgabeModalProps> = ({ open, onClose }) => 
     const [animatePick, setAnimatePick] = useState(false);
     const [animateList, setAnimateList] = useState(false);
     const [gramsBump, setGramsBump] = useState(false);
+    const [strains, setStrains] = useState<Strain[]>([]);
+    const [loading, setLoading] = useState<boolean>(false);
+    const [error, setError] = useState<string | null>(null);
 
-    const selected = useMemo(() => mockStrains.find(s => s.id === selectedId) || null, [selectedId]);
+    // Lade Sorten von der API, wenn das Modal geöffnet wird
+    useEffect(() => {
+        if (!open) return;
+        
+        const fetchStrains = async () => {
+            try {
+                setLoading(true);
+                setError(null);
+                const response = await api.getReadyBatches();
+                console.log('API Sorten geladen:', response);
+                
+                // Verarbeite die API-Antwort und konvertiere sie in das Strain-Format
+                if (response && typeof response === 'object') {
+                    // Prüfe, ob die Antwort in einem payload-Objekt verpackt ist
+                    const data = 'payload' in response ? (response as any).payload : response;
+                    
+                    if (Array.isArray(data)) {
+                        // Konvertiere die API-Daten in das Strain-Format
+                        const apiStrains: Strain[] = data.map((item: any, index: number) => {
+                            // Wähle ein Bild basierend auf dem Index (zyklisch)
+                            const images = [img1, img2, img3, img4, img5, img6];
+                            const imageIndex = index % images.length;
+                            
+                            return {
+                                id: item.id || item.batch || `api-${index}`,
+                                name: item.strain || `Sorte ${index + 1}`,
+                                stockGrams: item.stockGrams || item.weightMg / 1000 || 0,
+                                thc: item.thc || 0,
+                                cbd: item.cbd || 0,
+                                info: item.info || item.tags || [],
+                                imageDataUrl: images[imageIndex]
+                            };
+                        });
+                        setStrains(apiStrains);
+                    } else {
+                        console.error('API-Antwort ist kein Array:', data);
+                        setError('Die API-Antwort hat ein unerwartetes Format');
+                        // Fallback auf Mock-Daten, wenn die API-Antwort ungültig ist
+                        setStrains([...mockStrains]);
+                    }
+                } else {
+                    console.error('Ungültige API-Antwort:', response);
+                    setError('Die API-Antwort ist ungültig');
+                    // Fallback auf Mock-Daten, wenn die API-Antwort ungültig ist
+                    setStrains([...mockStrains]);
+                }
+            } catch (err) {
+                console.error('Fehler beim Laden der Sorten:', err);
+                setError('Fehler beim Laden der Sorten');
+                // Fallback auf Mock-Daten bei einem Fehler
+                setStrains([...mockStrains]);
+            } finally {
+                setLoading(false);
+            }
+        };
+        
+        fetchStrains();
+    }, [open]);
+
+    const selected = useMemo(() => strains.find(s => s.id === selectedId) || null, [selectedId, strains]);
     const canSave = !!selected && !!grams && !!member && !!identification;
 
     // Search: compute matches once for reuse in suggestions and filtered list
     const matches = useMemo(() => {
         const q = query.trim().toLowerCase();
-        if (!q) return mockStrains;
-        return mockStrains.filter(
+        if (!q) return strains;
+        return strains.filter(
             s => s.name.toLowerCase().includes(q) || s.info.some(i => i.toLowerCase().includes(q)),
         );
-    }, [query]);
+    }, [query, strains]);
     // No dropdown suggestions; list filters live based on `query`.
 
     // Mount/unmount handling for enter/leave animations
@@ -186,17 +250,19 @@ export const AusgabeModal: React.FC<AusgabeModalProps> = ({ open, onClose }) => 
         window.setTimeout(() => setGramsBump(false), 200);
     };
 
-    const save = () => {
+    const save = async () => {
         if (!selected) return;
         const g = parseLocale(grams);
-        const m = Number(member);
         if (!Number.isFinite(g) || g <= 0) return;
-        if (!Number.isInteger(m) || m <= 0) return;
+        if (!member || member.trim() === '') return;
         if (!identification) return;
-        // would call API here
-        // await api.postDisbursement({ strainId: selected.id, grams: g, memberNumber: m })
-        // for now, just close
-        onClose();
+        try {
+            await api.dispenseFromPlant(selected.id, { amount: g, under21, memberId: member.trim() });
+            onClose();
+        } catch (e) {
+            // minimal: keep UI unchanged; could add toast later
+            console.error(e);
+        }
     };
 
     if (!mounted) return null;
@@ -261,14 +327,32 @@ export const AusgabeModal: React.FC<AusgabeModalProps> = ({ open, onClose }) => 
                                 onScroll={onScroll}
                                 className={`strain-grid custom-scroll ${animateList ? "animate-appear" : ""} p-3 h-60vh overflow-auto`}
                             >
-                                {matches.map(s => (
-                                    <StrainCard
-                                        key={s.id}
-                                        strain={s}
-                                        selected={s.id === selectedId}
-                                        onSelect={setSelectedId}
-                                    />
-                                ))}
+                                {loading ? (
+                                    <div className="d-flex justify-content-center align-items-center h-100">
+                                        <div className="spinner-border text-primary" role="status">
+                                            <span className="visually-hidden">Lade Sorten...</span>
+                                        </div>
+                                    </div>
+                                ) : error ? (
+                                    <div className="alert alert-warning m-3" role="alert">
+                                        <span className="material-symbols-outlined me-2 align-middle">warning</span>
+                                        {error}
+                                    </div>
+                                ) : matches.length === 0 ? (
+                                    <div className="alert alert-info m-3" role="alert">
+                                        <span className="material-symbols-outlined me-2 align-middle">info</span>
+                                        Keine Sorten gefunden
+                                    </div>
+                                ) : (
+                                    matches.map(s => (
+                                        <StrainCard
+                                            key={s.id}
+                                            strain={s}
+                                            selected={s.id === selectedId}
+                                            onSelect={setSelectedId}
+                                        />
+                                    ))
+                                )}
                             </div>
                             <div className="fade-overlay-top" />
                             <div className="fade-overlay-bottom" />
@@ -314,12 +398,11 @@ export const AusgabeModal: React.FC<AusgabeModalProps> = ({ open, onClose }) => 
                         <div className="mb-3">
                             <label className="form-label">Mitgliedsnummer</label>
                             <input
-                                type="number"
-                                min="1"
+                                type="text"
                                 className="form-control"
                                 value={member}
                                 onChange={e => setMember(e.target.value)}
-                                placeholder="z.B. 12345"
+                                placeholder="z.B. 550e8400-e29b-41d4-a716-446655440000"
                             />
                         </div>
 
@@ -338,6 +421,19 @@ export const AusgabeModal: React.FC<AusgabeModalProps> = ({ open, onClose }) => 
                                 <option value="amtliches Dokument">Amtliches Dokument</option>
                                 <option value="mitgliedsausweis">Mitgliedsausweis</option>
                             </select>
+                        </div>
+
+                        <div className="form-check mb-3">
+                            <input
+                                className="form-check-input"
+                                type="checkbox"
+                                id="under21Check"
+                                checked={under21}
+                                onChange={e => setUnder21(e.target.checked)}
+                            />
+                            <label className="form-check-label" htmlFor="under21Check">
+                                Unter 21 Jahre
+                            </label>
                         </div>
 
                         <div className="mb-3">

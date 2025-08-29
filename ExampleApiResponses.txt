@@ -1,0 +1,64 @@
+Erweiterte Statistik:
+{
+    "total": {
+        "mg": 5,
+        "count": 1
+    },
+    "byGender": {
+        "f": {
+            "mg": 5,
+            "count": 1
+        },
+        "m": {
+            "mg": 0,
+            "count": 0
+        },
+        "d": {
+            "mg": 0,
+            "count": 0
+        },
+        "na": {
+            "mg": 0,
+            "count": 0
+        }
+    },
+    "byUnder21": {
+        "true": {
+            "mg": 0,
+            "count": 0
+        },
+        "false": {
+            "mg": 5,
+            "count": 1
+        }
+    }
+}
+
+Bestände:
+[
+    {
+        "batch": "a768cc78-8571-40d9-92da-48a50c970ea3",
+        "strain": "Green Gelato",
+        "currentStockMg": 75,
+        "currentStockG": 0.1,
+        "thc": 15,
+        "cbd": 8
+    },
+    {
+        "batch": "89c9641a-3ab8-43e6-9e05-2139d794f067",
+        "strain": "Bubble Kush",
+        "currentStockMg": 80,
+        "currentStockG": 0.1,
+        "thc": null,
+        "cbd": null
+    }
+]
+
+Dispense REsponse
+{
+    "payload": {
+        "ok": false,
+        "reason": "status must be \"ready\"",
+        "currentStock": 0
+    }
+}

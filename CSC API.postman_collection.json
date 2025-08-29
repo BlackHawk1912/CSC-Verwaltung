@@ -1,0 +1,507 @@
+{
+	"info": {
+		"_postman_id": "e9369c45-6e87-49ba-a2e0-6ac427125456",
+		"name": "CSC API",
+		"description": "Postman-Collection für CSC API (Production, Dispensing, Members)",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "7568220"
+	},
+	"item": [
+		{
+			"name": "Production",
+			"item": [
+				{
+					"name": "Neue Pflanze",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"strain\": \"Green Gelato\",\n  \"manufacturerBatch\": \"a1-b2-c3\",\n  \"seedingTimestamp\": \"2025-08-21T10:00:00Z\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{API_BASE_URL}}/plants/",
+							"host": [
+								"{{API_BASE_URL}}"
+							],
+							"path": [
+								"plants",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Gießen",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"millilitres\" :500\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{API_BASE_URL}}/plants/{{BATCH}}/watering",
+							"host": [
+								"{{API_BASE_URL}}"
+							],
+							"path": [
+								"plants",
+								"{{BATCH}}",
+								"watering"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Düngen",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"manufacturer\": \"Hesi\",\n  \"type\": \"flower fertilizer\",\n  \"millilitres\": 250,\n  \"lot\" : \"aa0815\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{API_BASE_URL}}/plants/{{BATCH}}/fertilization",
+							"host": [
+								"{{API_BASE_URL}}"
+							],
+							"path": [
+								"plants",
+								"{{BATCH}}",
+								"fertilization"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Ernten",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n   \"harvestWeightMg\": 120\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{API_BASE_URL}}/plants/{{BATCH}}/harvest",
+							"host": [
+								"{{API_BASE_URL}}"
+							],
+							"path": [
+								"plants",
+								"{{BATCH}}",
+								"harvest"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Trocknung beenden",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"dryingWeightMg\": 80\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{API_BASE_URL}}/plants/{{BATCH}}/finalize-drying",
+							"host": [
+								"{{API_BASE_URL}}"
+							],
+							"path": [
+								"plants",
+								"{{BATCH}}",
+								"finalize-drying"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Analyse hinzufügen",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n   \"thc\" : 15,\n   \"cbd\" : 8,\n   \"reportB64\" : \"\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{API_BASE_URL}}/plants/{{BATCH}}/analysis",
+							"host": [
+								"{{API_BASE_URL}}"
+							],
+							"path": [
+								"plants",
+								"{{BATCH}}",
+								"analysis"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Abschreiben",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"reason\" : \"Schimmel\",\n    \"sign1\" : \"Karl\",\n    \"sign2\" : \"Heinz\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{API_BASE_URL}}/plants/{{BATCH}}/depreciate",
+							"host": [
+								"{{API_BASE_URL}}"
+							],
+							"path": [
+								"plants",
+								"{{BATCH}}",
+								"depreciate"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Ausgabe",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"amount\" :5, \r\n    \"under21\" : false\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{API_BASE_URL}}/plants/{{BATCH}}/dispense",
+							"host": [
+								"{{API_BASE_URL}}"
+							],
+							"path": [
+								"plants",
+								"{{BATCH}}",
+								"dispense"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Ready-Bestände abrufen",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{API_BASE_URL}}/plants/ready",
+							"host": [
+								"{{API_BASE_URL}}"
+							],
+							"path": [
+								"plants",
+								"ready"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Pflanzen Daten",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{API_BASE_URL}}/plants/{{BATCH}}",
+							"host": [
+								"{{API_BASE_URL}}"
+							],
+							"path": [
+								"plants",
+								"{{BATCH}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Ausgabe möglich ?",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{API_BASE_URL}}/plants/{{BATCH}}/canDispense?amount=5&under21=true",
+							"host": [
+								"{{API_BASE_URL}}"
+							],
+							"path": [
+								"plants",
+								"{{BATCH}}",
+								"canDispense"
+							],
+							"query": [
+								{
+									"key": "amount",
+									"value": "5"
+								},
+								{
+									"key": "under21",
+									"value": "true"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Dispensing",
+			"item": [
+				{
+					"name": "Ausgabe erfassen",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"batchId\": \"{{BATCH}}\",\n  \"memberUuid\": \"{{MEMBER}}\",\n  \"thcPercent\": 15,\n  \"under21\": false,\n  \"gramsMg\": 5,\n  \"gender\" : \"f\",\n  \"operator\": \"Karl\",\n  \"sign\" : \"HEINZ\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{API_BASE_URL}}/dispense",
+							"host": [
+								"{{API_BASE_URL}}"
+							],
+							"path": [
+								"dispense"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Standard-Statistik",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{API_BASE_URL}}/dispense/statistics?start=2025-08-01&end=2025-08-30",
+							"host": [
+								"{{API_BASE_URL}}"
+							],
+							"path": [
+								"dispense",
+								"statistics"
+							],
+							"query": [
+								{
+									"key": "start",
+									"value": "2025-08-01"
+								},
+								{
+									"key": "end",
+									"value": "2025-08-30"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Erweiterte Statistik",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{API_BASE_URL}}/dispense//statistics/extended?start=2025-08-01&end=2025-08-30",
+							"host": [
+								"{{API_BASE_URL}}"
+							],
+							"path": [
+								"dispense",
+								"",
+								"statistics",
+								"extended"
+							],
+							"query": [
+								{
+									"key": "start",
+									"value": "2025-08-01"
+								},
+								{
+									"key": "end",
+									"value": "2025-08-30"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Members",
+			"item": [
+				{
+					"name": "Mitglied anlegen",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"uuid\": \"1d4cff3a-97ab-47f8-a2a0-f80429d80239\",\n  \"dayOfBirth\" :\"1980-01-01\",\n  \"firstname\": \"Mia\",\n  \"lastname\": \"Schmidt\",\n  \"gender\": \"f\",\n  \"address\" :{\n        \"street\": \"Meisen weg 5\", \n        \"postalcode\" :\"12345\", \n        \"city\" : \"Hinterm Mond\",\n        \"country\" : \"DE\"\n  },\n  \"joinDate\" : \"2025-08-22\",\n  \"affidavit\" : \"JVBERi0xLjQKJeLjz9MKMSAwIG9iago8PCAvVHlwZSAvQ2F0YWxvZyAvUGFnZXMgMiAwIFIgPj4KZW5kb2JqCjIgMCBvYmoKPDwgL1R5cGUgL1BhZ2VzIC9LaWRzIFszIDAgUl0gL0NvdW50IDEgPj4KZW5kb2JqCjMgMCBvYmoKPDwgL1R5cGUgL1BhZ2UgL1BhcmVudCAyIDAgUiAvTWVkaWFCb3ggWzAgMCA2MTIgNzkyXSAvUmVzb3VyY2VzIDw8IC9Gb250IDw8IC9GMSA1IDAgUiA+PiA+PiAvQ29udGVudHMgNCAwIFIgPj4KZW5kb2JqCjQgMCBvYmoKPDwgL0xlbmd0aCA0OSA+PgpzdHJlYW0KQlQKIC9GMSAyNCBUZgogNTAgNzAwIFRkCiAoSGVsbG8sIFBERiEpIFRqCkVUCmVuZHN0cmVhbQplbmRvYmoKNSAwIG9iago8PCAvVHlwZSAvRm9udCAvU3VidHlwZSAvVHlwZTEgL0Jhc2VGb250IC9IZWx2ZXRpY2EgPj4KZW5kb2JqCnhyZWYKMCA2CjAwMDAwMDAwMCA2NTUzNSBmIAowMDAwMDAwMTAwMDAwMCBuIAowMDAwMDAwNjAwMDAwMCBuIAowMDAwMDAxMTEwMDAwMCBuIAowMDAwMDAyMjIwMDAwMCBuIAowMDAwMDAzMjAwMDAwMCBuIAp0cmFpbGVyCjw8IC9TaXplIDYgL1Jvb3QgMSAwIFIgPj4Kc3RhcnR4cmVmCjM4NQolJUVPRgo=\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{API_BASE_URL}}/members",
+							"host": [
+								"{{API_BASE_URL}}"
+							],
+							"path": [
+								"members"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Mitglied abrufen",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{API_BASE_URL}}/members/{{MEMBER}}",
+							"host": [
+								"{{API_BASE_URL}}"
+							],
+							"path": [
+								"members",
+								"{{MEMBER}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Mitglied suchen",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{API_BASE_URL}}/members/search?lastname=Schmidt&dayOfBirth=1980-01-01",
+							"host": [
+								"{{API_BASE_URL}}"
+							],
+							"path": [
+								"members",
+								"search"
+							],
+							"query": [
+								{
+									"key": "lastname",
+									"value": "Schmidt"
+								},
+								{
+									"key": "dayOfBirth",
+									"value": "1980-01-01"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "API_BASE_URL",
+			"value": "http://192.168.178.108:3000"
+		},
+		{
+			"key": "BATCH",
+			"value": "1d4cff3a-97ab-47f8-a2a0-f80429d80239"
+		},
+		{
+			"key": "MEMBER",
+			"value": "1d4cff3a-97ab-47f8-a2a0-f80429d80239",
+			"type": "string"
+		}
+	]
+}

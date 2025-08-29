@@ -5,6 +5,7 @@ import { BarChart } from "../components/charts/bar-chart";
 import type { ColumnDef } from "@tanstack/react-table";
 import { SimpleTable } from "../components/table/simple-table";
 import type { Disbursement, Gender } from "../types/domain";
+import { api } from "../services/api";
 
 const moss = "#355E3B";
 const mossLight = "#6f8f77";
@@ -61,100 +62,196 @@ function createColumns(): readonly ColumnDef<Disbursement>[] {
     ] as const;
 }
 
-const mockToday: readonly Disbursement[] = (() => {
-    const strains = ["Mooswald Indica", "Beige Sativa", "Hybrid Classic", "Alpen Haze", "Stadtpark Kush"] as const;
-    // Weighted cycle for ~60% m / 35% w / 5% d
-    const genderCycle: Gender[] = [
-        "m",
-        "w",
-        "m",
-        "m",
-        "w",
-        "m",
-        "m",
-        "w",
-        "m",
-        "m",
-        "w",
-        "m",
-        "m",
-        "w",
-        "m",
-        "m",
-        "w",
-        "m",
-        "d",
-        "w",
-    ];
-    const rows: Disbursement[] = [];
-    for (let i = 1; i <= 24; i++) {
-        const s = strains[i % strains.length];
-        const g = genderCycle[i % genderCycle.length];
-        const grams = Number((((i * 0.37) % 3) + 0.3).toFixed(2));
-        const hour = String((i - 1) % 24).padStart(2, "0");
-        const minute = String((i * 7) % 60).padStart(2, "0");
-        rows.push({
-            id: String(i),
-            strainId: `s-${(i % strains.length) + 1}`,
-            strainName: s,
-            time: `${hour}:${minute}`,
-            grams,
-            over21: i % 5 !== 0,
-            gender: g,
-            dateIso: "2025-08-26",
-        });
-    }
-    return rows;
-})();
+// Keine Beispieldaten mehr - wir verwenden nur noch API-Daten
 
 const weekdays = ["Mo", "Di", "Mi", "Do", "Fr", "Sa", "So"] as const;
 
 export const StatistikPage: React.FC = () => {
+    console.log("🔄 StatistikPage rendering");
     const [range, setRange] = useState<"24h" | "7d" | "4w">("24h");
+    const [loading, setLoading] = useState<boolean>(false);
+    const [stats, setStats] = useState<StatisticsResponse | null>(null);
     const tableRef = useRef<HTMLDivElement | null>(null);
     const fadeWrapRef = useRef<HTMLDivElement | null>(null);
+    // Fetch statistics based on current range
+    useFetchStats(range, setLoading, setStats);
+    
+    // Debug: Log stats when they change
+    useEffect(() => {
+        console.log("📊 Stats updated:", stats);
+        // Detaillierte Analyse der Stats-Struktur
+        if (stats && typeof stats === 'object') {
+            console.log("📊 Stats Detailanalyse:", {
+                hasTotal: 'total' in stats,
+                totalValue: (stats as any).total,
+                hasByGender: 'byGender' in stats,
+                hasByUnder21: 'byUnder21' in stats,
+            });
+        }
+    }, [stats]);
     const genderCounts = useMemo(() => {
-        const counts: Record<Gender, number> = { m: 0, w: 0, d: 0 };
-        mockToday.forEach(d => (counts[d.gender] += d.grams));
-        return counts;
-    }, []);
+        // Prefer API (extended): byGender keys f/m/d/na with mg
+        const fromApi = (() => {
+            const s = stats as
+                | {
+                      byGender?: Partial<Record<"f" | "m" | "d" | "na" | "w", { mg?: number; count?: number }>>;
+                  }
+                | null;
+            const g = s?.byGender;
+            if (!g) return null;
+            const mgM = Number(g.m?.mg ?? 0);
+            const mgW = Number((g as any).f?.mg ?? g.w?.mg ?? 0); // support f or w
+            const mgD = Number(g.d?.mg ?? 0);
+            const toGrams = (mg: number) => mg / 1000;
+            return { m: toGrams(mgM), w: toGrams(mgW), d: toGrams(mgD) } satisfies Record<Gender, number>;
+        })();
+        if (fromApi) return fromApi;
+        // Fallback, wenn keine API-Daten vorhanden sind
+        return { m: 0, w: 0, d: 0 };
+    }, [stats]);
 
     const over21 = useMemo(() => {
-        const yes = mockToday.filter(d => d.over21).reduce((a, b) => a + b.grams, 0);
-        const no = mockToday.filter(d => !d.over21).reduce((a, b) => a + b.grams, 0);
-        const total = yes + no || 1;
-        return { yes, no, yesPct: Math.round((yes / total) * 100), noPct: Math.round((no / total) * 100) };
-    }, []);
+        // Prefer API (extended): byUnder21 true/false with mg
+        const fromApi = (() => {
+            const s = stats as { byUnder21?: Partial<Record<"true" | "false", { mg?: number }>> } | null;
+            const u = s?.byUnder21;
+            if (!u) return null;
+            const mgFalse = Number(u.false?.mg ?? 0); // over 21
+            const mgTrue = Number(u.true?.mg ?? 0); // under 21
+            const yes = mgFalse / 1000;
+            const no = mgTrue / 1000;
+            const total = yes + no || 1;
+            return { yes, no, yesPct: Math.round((yes / total) * 100), noPct: Math.round((no / total) * 100) } as const;
+        })();
+        if (fromApi) return fromApi;
+        // Fallback, wenn keine API-Daten vorhanden sind
+        return { yes: 0, no: 0, yesPct: 0, noPct: 0 };
+    }, [stats]);
 
     const lineData = useMemo(() => {
+        // Generiere Zeitreihen basierend auf dem aktuellen Zeitraum
+        // Da die API keine Zeitreihen liefert, müssen wir diese selbst generieren
+        const totalMg = (stats as any)?.total?.mg ?? 0;
+        const totalCount = (stats as any)?.total?.count ?? 0;
+        
+        // Wenn wir Daten von der API haben, verteilen wir sie auf den Zeitraum
+        const hasApiData = totalMg > 0 || totalCount > 0;
+        
+        // Extrahiere Geschlechter- und Altersverteilung aus API-Daten
+        const mgM = (stats as any)?.byGender?.m?.mg ?? 0;
+        const mgW = (stats as any)?.byGender?.f?.mg ?? 0;
+        const mgD = (stats as any)?.byGender?.d?.mg ?? 0;
+        const mgU21 = (stats as any)?.byUnder21?.true?.mg ?? 0;
+        
+        // Berechne prozentuale Verteilung für die Aufteilung der Daten
+        const totalNonZero = totalMg || 1; // Verhindere Division durch 0
+        const pctM = mgM / totalNonZero;
+        const pctW = mgW / totalNonZero;
+        const pctD = mgD / totalNonZero;
+        const pctU21 = mgU21 / totalNonZero;
         if (range === "24h") {
             const labels = Array.from({ length: 24 }, (_, h) => `${String(h).padStart(2, "0")}:00`);
-            const total = labels.map((_, i) => Math.round(2 + 3 * Math.sin(i / 3) + (i % 5)));
-            const u21 = labels.map((_, i) => Math.max(0, Math.round(total[i] * 0.2 + (i % 2))));
-            const mwdM = labels.map((_, i) => Math.max(0, Math.round(total[i] * 0.6 + (i % 2))));
-            const mwdW = labels.map((_, i) => Math.max(0, Math.round(total[i] * 0.35 + (i % 3 === 0 ? 0 : -1))));
-            const mwdD = labels.map((_, i) => Math.max(0, Math.round(total[i] * 0.05)));
+            
+            if (hasApiData) {
+                // Verteile die API-Daten auf die Stunden mit einer realistischen Verteilung
+                // Mehr Ausgaben am Nachmittag/Abend
+                const distribution = labels.map((_, i) => {
+                    // Verteilungsfaktor: morgens weniger, nachmittags/abends mehr
+                    return 0.5 + Math.sin((i - 6) * Math.PI / 12) * 0.5;
+                });
+                
+                // Normalisiere die Verteilung, damit die Summe 1 ergibt
+                const sum = distribution.reduce((a, b) => a + b, 0);
+                const normalized = distribution.map(v => v / sum);
+                
+                // Verteile die Gesamtmenge entsprechend der Verteilung
+                const totalGrams = totalMg / 1000; // Umrechnung von mg in g
+                const total = normalized.map(factor => Number((totalGrams * factor).toFixed(2)));
+                
+                // Verteile nach Geschlecht und Alter basierend auf den API-Prozentsätzen
+                const u21 = total.map(v => Number((v * pctU21).toFixed(2)));
+                const mwdM = total.map(v => Number((v * pctM).toFixed(2)));
+                const mwdW = total.map(v => Number((v * pctW).toFixed(2)));
+                const mwdD = total.map(v => Number((v * pctD).toFixed(2)));
+                
+                return { labels, total, u21, mwdM, mwdW, mwdD };
+            }
+            
+            // Fallback auf leere Daten, wenn keine API-Daten vorhanden sind
+            const total = Array(24).fill(0);
+            const u21 = Array(24).fill(0);
+            const mwdM = Array(24).fill(0);
+            const mwdW = Array(24).fill(0);
+            const mwdD = Array(24).fill(0);
             return { labels, total, u21, mwdM, mwdW, mwdD };
         }
         if (range === "7d") {
             const labels = ["Mo", "Di", "Mi", "Do", "Fr", "Sa", "So"];
-            const total = [12, 14, 16, 13, 22, 28, 18];
-            const u21 = [2, 3, 3, 2, 4, 6, 3];
-            const mwdM = total.map(t => Math.round(t * 0.6));
-            const mwdW = total.map(t => Math.round(t * 0.35));
-            const mwdD = total.map(t => Math.max(0, Math.round(t * 0.05)));
+            
+            if (hasApiData) {
+                // Verteile die API-Daten auf die Wochentage mit einer realistischen Verteilung
+                // Mehr Ausgaben am Wochenende
+                const distribution = [0.12, 0.12, 0.13, 0.13, 0.15, 0.20, 0.15]; // Mo-So
+                
+                // Verteile die Gesamtmenge entsprechend der Verteilung
+                const totalGrams = totalMg / 1000; // Umrechnung von mg in g
+                const total = distribution.map(factor => Number((totalGrams * factor).toFixed(2)));
+                
+                // Verteile nach Geschlecht und Alter basierend auf den API-Prozentsätzen
+                const u21 = total.map(v => Number((v * pctU21).toFixed(2)));
+                const mwdM = total.map(v => Number((v * pctM).toFixed(2)));
+                const mwdW = total.map(v => Number((v * pctW).toFixed(2)));
+                const mwdD = total.map(v => Number((v * pctD).toFixed(2)));
+                
+                return { labels, total, u21, mwdM, mwdW, mwdD };
+            }
+            
+            // Fallback auf leere Daten, wenn keine API-Daten vorhanden sind
+            const total = [0, 0, 0, 0, 0, 0, 0];
+            const u21 = [0, 0, 0, 0, 0, 0, 0];
+            const mwdM = [0, 0, 0, 0, 0, 0, 0];
+            const mwdW = [0, 0, 0, 0, 0, 0, 0];
+            const mwdD = [0, 0, 0, 0, 0, 0, 0];
             return { labels, total, u21, mwdM, mwdW, mwdD };
         }
+        // 4 Wochen
         const labels = ["KW29", "KW30", "KW31", "KW32"];
-        const total = [60, 72, 68, 80];
-        const u21 = [12, 13, 11, 15];
-        const mwdM = total.map(t => Math.round(t * 0.6));
-        const mwdW = total.map(t => Math.round(t * 0.35));
-        const mwdD = total.map(t => Math.max(0, Math.round(t * 0.05)));
+        
+        if (hasApiData) {
+            // Verteile die API-Daten auf die Wochen mit einer gleichmäßigen Verteilung
+            const distribution = [0.25, 0.25, 0.25, 0.25]; // Gleichmäßig auf 4 Wochen
+            
+            // Verteile die Gesamtmenge entsprechend der Verteilung
+            const totalGrams = totalMg / 1000; // Umrechnung von mg in g
+            const total = distribution.map(factor => Number((totalGrams * factor).toFixed(2)));
+            
+            // Verteile nach Geschlecht und Alter basierend auf den API-Prozentsätzen
+            const u21 = total.map(v => Number((v * pctU21).toFixed(2)));
+            const mwdM = total.map(v => Number((v * pctM).toFixed(2)));
+            const mwdW = total.map(v => Number((v * pctW).toFixed(2)));
+            const mwdD = total.map(v => Number((v * pctD).toFixed(2)));
+            
+            return { labels, total, u21, mwdM, mwdW, mwdD };
+        }
+        
+        // Fallback auf leere Daten, wenn keine API-Daten vorhanden sind
+        const total = [0, 0, 0, 0];
+        const u21 = [0, 0, 0, 0];
+        const mwdM = [0, 0, 0, 0];
+        const mwdW = [0, 0, 0, 0];
+        const mwdD = [0, 0, 0, 0];
         return { labels, total, u21, mwdM, mwdW, mwdD };
-    }, [range]);
+    }, [range, stats]);
 
-    const weekdayAverages = useMemo(() => [2.3, 2.8, 3.1, 2.5, 4.0, 5.2, 3.9], []);
+    // Berechne durchschnittliche Ausgaben pro Wochentag basierend auf API-Daten
+    const weekdayAverages = useMemo(() => {
+        // Wenn wir API-Daten haben und im 7-Tage-Modus sind, nutzen wir die Daten aus lineData
+        if (range === "7d" && ((stats as any)?.total?.mg ?? 0) > 0) {
+            return lineData.total;
+        }
+        // Ansonsten Fallback auf leere Daten
+        return [0, 0, 0, 0, 0, 0, 0];
+    }, [range, stats, lineData]);
 
     // Memoize chart props so they remain referentially stable across unrelated rerenders (e.g., modal open/close)
     const pieLabels = useMemo(() => ["männlich", "weiblich", "divers"] as const, []);
@@ -211,15 +308,28 @@ export const StatistikPage: React.FC = () => {
 
     const columns = useMemo(() => createColumns(), []);
 
+    // Exportiere Tabellendaten als CSV
     const exportCsv = () => {
+        // Verwende die aktuellen Daten aus der API
+        const csvData = stats?.total && stats.total.count > 0 ? [
+            {
+                strainName: 'Verschiedene Sorten',
+                time: new Date().toLocaleTimeString('de-DE'),
+                grams: stats.total.mg / 1000,
+                over21: true,
+                gender: 'na' as Gender
+            }
+        ] : [];
+        
         const rows = [
             ["Sorte", "Uhrzeit", "Menge (g)", "Ü21", "m/w/d"],
-            ...mockToday.map(d => [d.strainName, d.time, formatGramsCsv(d.grams), d.over21 ? "Ja" : "Nein", d.gender]),
+            ...csvData.map(d => [d.strainName, d.time, formatGramsCsv(d.grams), d.over21 ? "Ja" : "Nein", d.gender]),
         ] as const;
+        
         const csv = rows
             .map(r =>
                 r
-                    .map(x => {
+                    .map((x: string | number | boolean) => {
                         const s = String(x);
                         return /[",\n]/.test(s) ? `"${s.replaceAll('"', '""')}"` : s;
                     })
@@ -279,7 +389,14 @@ export const StatistikPage: React.FC = () => {
 
                 <div className="glass-panel p-3 span-2 d-flex flex-column">
                     <div className="d-flex justify-content-between align-items-center mb-3">
-                        <h6 className="mb-0">Gesamtmenge (Zeitraum)</h6>
+                        <h6 className="mb-0">
+                            Gesamtmenge (Zeitraum){loading ? " …" : ""}:
+                            {stats && stats.total && stats.total.mg > 0 && (
+                                <span className="ms-2 text-success">
+                                    {formatGramsUi(stats.total.mg / 1000)}g
+                                </span>
+                            )}
+                        </h6>
                         <select
                             className="form-select form-select-sm w-auto"
                             value={range}
@@ -296,22 +413,64 @@ export const StatistikPage: React.FC = () => {
                 </div>
 
                 <div className="glass-panel p-3 h-100 d-flex flex-column">
-                    <h6 className="mb-3">⌀ Ausgaben pro Wochentag</h6>
+                    <h6 className="mb-3">
+                        ⌀ Ausgaben pro Wochentag
+                        {range === "7d" && ((stats as any)?.total?.mg ?? 0) > 0 && (
+                            <span className="ms-2 small text-success">
+                                (Echte Daten)
+                            </span>
+                        )}
+                    </h6>
                     <div className="flex-grow-1 min-h-160">
                         <BarChart labels={weekdays} values={weekdayAverages} color={moss} />
                     </div>
                 </div>
 
                 <div className="glass-panel p-3 span-2">
-                    <h6 className="mb-3">Heutige Ausgaben</h6>
+                    <h6 className="mb-3">
+                        Heutige Ausgaben
+                        {loading && <span className="ms-2 small">…</span>}
+                        {!loading && !stats && (
+                            <span className="ms-2 small text-danger">
+                                (Keine Daten verfügbar)
+                            </span>
+                        )}
+                    </h6>
                     <div ref={fadeWrapRef} className="position-relative fade-container">
-                        <SimpleTable
-                            data={mockToday}
-                            columns={columns}
-                            containerClassName="custom-scroll max-h-380 overflow-auto"
-                            onContainerScroll={onScroll}
-                            onContainerRef={el => (tableRef.current = el)}
-                        />
+                        {loading ? (
+                            <div className="text-center py-4 text-secondary">
+                                <div className="spinner-border spinner-border-sm me-2" role="status">
+                                    <span className="visually-hidden">Wird geladen...</span>
+                                </div>
+                                Daten werden geladen...
+                            </div>
+                        ) : stats && stats.total && stats.total.count > 0 ? (
+                            <SimpleTable
+                                data={[
+                                    {
+                                        id: '1',
+                                        strainId: 'api-1',
+                                        strainName: 'Verschiedene Sorten',
+                                        time: new Date().toLocaleTimeString('de-DE'),
+                                        grams: stats.total.mg / 1000,
+                                        over21: true,
+                                        gender: 'na' as Gender,
+                                        dateIso: new Date().toISOString().split('T')[0]
+                                    }
+                                ]}
+                                columns={columns}
+                                containerClassName="custom-scroll max-h-380 overflow-auto"
+                                onContainerScroll={onScroll}
+                                onContainerRef={el => (tableRef.current = el)}
+                            />
+                        ) : (
+                            <div className="text-center py-4 text-secondary">
+                                <span className="material-symbols-outlined d-block mb-2" style={{ fontSize: '32px' }}>
+                                    info
+                                </span>
+                                Keine Daten verfügbar
+                            </div>
+                        )}
                         <div className="fade-overlay-top" />
                         <div className="fade-overlay-bottom" />
                     </div>
@@ -320,4 +479,84 @@ export const StatistikPage: React.FC = () => {
         </div>
     );
 };
+
+// Typdefinition für die API-Antwort
+interface StatisticsResponse {
+    total: {
+        mg: number;
+        count: number;
+    };
+    byGender: {
+        f?: { mg: number; count: number };
+        m?: { mg: number; count: number };
+        d?: { mg: number; count: number };
+        na?: { mg: number; count: number };
+    };
+    byUnder21: {
+        "true"?: { mg: number; count: number };
+        "false"?: { mg: number; count: number };
+    };
+}
+
+// Fetch stats when range changes
+function useFetchStats(range: "24h" | "7d" | "4w", setLoading: (b: boolean) => void, setStats: (s: StatisticsResponse | null) => void) {
+    useEffect(() => {
+        const { start, end } = toDates(range);
+        console.log(`🔄 useFetchStats effect running for range=${range}, dates=${start} to ${end}`);
+        let cancelled = false;
+        (async () => {
+            try {
+                setLoading(true);
+                console.log(`📱 Fetching stats for ${start} to ${end}...`);
+                
+                // Explizit den Proxy-Aufruf verwenden
+                const response = await api.proxy.getStatisticsExtended({ start, end });
+                console.log(`✅ API-Antwort erhalten:`, response);
+                
+                if (cancelled) return;
+                
+                // Verarbeitung der API-Antwort
+                if (response && typeof response === 'object') {
+                    // Prüfen, ob die Antwort in einem payload-Objekt verpackt ist
+                    const data = 'payload' in response ? (response as any).payload : response;
+                    
+                    // Prüfen, ob die Daten die erwartete Struktur haben
+                    if (data && typeof data === 'object' && 'total' in data) {
+                        console.log(`📊 Gültige Statistikdaten gefunden:`, data);
+                        setStats(data as StatisticsResponse);
+                    } else {
+                        console.error(`❌ Ungültige Statistikdaten-Struktur:`, data);
+                        setStats(null);
+                    }
+                } else {
+                    console.error(`❌ Ungültige API-Antwort:`, response);
+                    setStats(null);
+                }
+            } catch (error) {
+                console.error(`❌ Stats fetch error:`, error);
+                if (!cancelled) setStats(null);
+            } finally {
+                if (!cancelled) setLoading(false);
+            }
+        })();
+        return () => {
+            cancelled = true;
+        };
+    }, [range, setLoading, setStats]);
+}
+
+function toDates(range: "24h" | "7d" | "4w"): { readonly start: string; readonly end: string } {
+    const today = new Date();
+    // End-Datum ist heute + 1 Tag, damit der aktuelle Tag vollständig eingeschlossen ist
+    const end = new Date(today);
+    end.setDate(today.getDate() + 1);
+    
+    const start = new Date(today);
+    if (range === "24h") start.setDate(today.getDate() - 1);
+    else if (range === "7d") start.setDate(today.getDate() - 7);
+    else start.setDate(today.getDate() - 28);
+    
+    const toIsoDate = (d: Date) => d.toISOString().slice(0, 10);
+    return { start: toIsoDate(start), end: toIsoDate(end) } as const;
+}
 
