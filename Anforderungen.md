@@ -38,3 +38,8 @@ Wir brauchen eine Navigationsleiste (linker Rand) mit 2 Dummy Buttons, sowie ein
 - Chart.js
 
 Das Backend ist bereits implementiert und nutzt Blockchain (das ist aber für uns egal). Kommuniziert wird über http requests im JSON Format. Die UI Komponenten sollten nach dem atomic design prinzip aufgebaut sein.
+
+
+- geschlechterverteilung als balken
+- kuchendriagramm: sorten beliebtheit
+- liniendiagram ansicht umschaltung defekt
