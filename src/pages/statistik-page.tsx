@@ -258,7 +258,7 @@ export const StatistikPage: React.FC = () => {
                 </div>
 
                 <div className="glass-panel p-3 h-100 d-flex flex-column">
-                    <h6 className="mb-3">Alter: unter 21 / über 21</h6>
+                    <h6 className="mb-3">Alter</h6>
                     <div className="d-flex flex-column justify-content-center flex-grow-1">
                         <div className="progress w-100" role="progressbar" aria-label="U21/Ü21">
                             <div
@@ -271,8 +271,8 @@ export const StatistikPage: React.FC = () => {
                             />
                         </div>
                         <div className="d-flex justify-content-between small text-secondary mt-1">
-                            <span>U21 {over21.noPct}%</span>
-                            <span>Ü21 {over21.yesPct}%</span>
+                            <span>{over21.noPct}% unter 21 </span>
+                            <span>{over21.yesPct}% über 21 </span>
                         </div>
                     </div>
                 </div>
@@ -296,7 +296,7 @@ export const StatistikPage: React.FC = () => {
                 </div>
 
                 <div className="glass-panel p-3 h-100 d-flex flex-column">
-                    <h6 className="mb-3">Durchschnitt je Wochentag</h6>
+                    <h6 className="mb-3">⌀ Ausgaben pro Wochentag</h6>
                     <div className="flex-grow-1 min-h-160">
                         <BarChart labels={weekdays} values={weekdayAverages} color={moss} />
                     </div>
