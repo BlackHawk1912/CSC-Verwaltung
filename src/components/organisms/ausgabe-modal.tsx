@@ -100,6 +100,8 @@ export const AusgabeModal: React.FC<AusgabeModalProps> = ({ open, onClose }) => 
     const [strains, setStrains] = useState<Strain[]>([]);
     const [loading, setLoading] = useState<boolean>(false);
     const [error, setError] = useState<string | null>(null);
+    const [submitting, setSubmitting] = useState<boolean>(false);
+    const [submitError, setSubmitError] = useState<string | null>(null);
 
     // Lade Sorten von der API, wenn das Modal geöffnet wird
     useEffect(() => {
@@ -196,6 +198,7 @@ export const AusgabeModal: React.FC<AusgabeModalProps> = ({ open, onClose }) => 
         setAnimatePick(false);
         setAnimateList(false);
         setGramsBump(false);
+        setSubmitError(null);
     }, [open]);
 
     // prevent background scroll while modal is visible
@@ -254,12 +257,17 @@ export const AusgabeModal: React.FC<AusgabeModalProps> = ({ open, onClose }) => 
         if (!Number.isFinite(g) || g <= 0) return;
         if (!member || member.trim() === "") return;
         if (!identification) return;
+        setSubmitError(null);
+        setSubmitting(true);
         try {
             await api.dispenseFromPlant(selected.id, { amount: g, under21, memberId: member.trim() });
             onClose();
-        } catch (e) {
-            // minimal: keep UI unchanged; could add toast later
+        } catch (e: unknown) {
             console.error(e);
+            const message = e instanceof Error ? e.message : "Unbekannter Fehler beim Speichern";
+            setSubmitError(message);
+        } finally {
+            setSubmitting(false);
         }
     };
 
@@ -274,7 +282,13 @@ export const AusgabeModal: React.FC<AusgabeModalProps> = ({ open, onClose }) => 
             >
                 <div className="d-flex justify-content-between align-items-center mb-2">
                     <h5 className="mb-0">Neue Ausgabe</h5>
-                    <button type="button" className="btn-close" aria-label="Close" onClick={onClose} />
+                    <button
+                        type="button"
+                        className="btn-close"
+                        aria-label="Close"
+                        onClick={onClose}
+                        disabled={submitting}
+                    />
                 </div>
 
                 <div className="row g-4">
@@ -357,7 +371,7 @@ export const AusgabeModal: React.FC<AusgabeModalProps> = ({ open, onClose }) => 
                         </div>
                     </div>
 
-                    <div className="col-md-5">
+                    <div className="col-md-5 position-relative">
                         <div className="mb-3">
                             <label className="form-label">Menge</label>
                             <div className={`input-group align-items-stretch ${gramsBump ? "bump" : ""}`}>
@@ -444,20 +458,34 @@ export const AusgabeModal: React.FC<AusgabeModalProps> = ({ open, onClose }) => 
                                 <div className="small text-secondary">Keine Sorte gewählt</div>
                             )}
                         </div>
+                        {submitError && (
+                            <div className="position-absolute bottom-0 start-0 end-0 px-2" style={{ zIndex: 2 }}>
+                                <div className="alert alert-danger py-2 mb-0" role="alert">
+                                    <span className="material-symbols-outlined me-2 align-middle">error</span>
+                                    <span className="small align-middle">{submitError}</span>
+                                </div>
+                            </div>
+                        )}
                     </div>
                 </div>
-
                 <div className="d-flex justify-content-end gap-2 mt-3">
-                    <button type="button" className="btn btn-outline-secondary" onClick={onClose}>
+                    <button type="button" className="btn btn-outline-secondary" onClick={onClose} disabled={submitting}>
                         Abbrechen
                     </button>
                     <button
                         type="button"
                         className={`btn btn-success ${canSave ? "can-save" : ""}`}
                         onClick={save}
-                        disabled={!canSave}
+                        disabled={!canSave || submitting}
                     >
-                        Speichern
+                        {submitting ? (
+                            <>
+                                <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true" />
+                                Speichern …
+                            </>
+                        ) : (
+                            "Speichern"
+                        )}
                     </button>
                 </div>
             </div>

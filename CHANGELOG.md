@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+- Dev: Vite-Proxy um Authentifizierung (Benutzername/Passwort) erweitert. Nutzt `VITE_API_USERNAME` und `VITE_API_PASSWORD` Umgebungsvariablen für die API-Authentifizierung.
+
+- UI: Ausgabe-Modal – Während des Speichervorgangs sind „Speichern“, „Abbrechen“ und das Schließen-Icon deaktiviert; der „Speichern“-Button zeigt einen Loading-Spinner. Serverfehler werden als Alert im Modal angezeigt.
+
 - Feature: Add typed API client covering all endpoints from Postman collection in `src/services/api.ts` (plants lifecycle, dispensing, members). Uses `VITE_API_URL` as base and RO-RO helpers.
 
 - Feature: Statistik lädt Kennzahlen aus der API basierend auf gewähltem Zeitraum (`src/pages/statistik-page.tsx`). Charts nutzen API-Daten mit Fallbacks; Tabelle "Heutige Ausgaben" zeigt API-Daten an.

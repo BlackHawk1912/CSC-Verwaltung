@@ -42,7 +42,22 @@ const fetchJson = async <T>({ url, method = "GET", body, useDirect = false }: Fe
     console.log(`API Response ${response.status} for ${method} ${fullUrl}`);
     
     if (!response.ok) {
-        throw new Error(`API error ${response.status}: ${response.statusText}`);
+        try {
+            const ct = response.headers.get("content-type") || "";
+            if (ct.includes("application/json")) {
+                const errJson: any = await response.json();
+                const msg = typeof errJson?.error === "string" && errJson.error
+                    ? errJson.error
+                    : JSON.stringify(errJson);
+                throw new Error(msg);
+            } else {
+                const errText = await response.text();
+                throw new Error(errText || `API error ${response.status}: ${response.statusText}`);
+            }
+        } catch (parseErr) {
+            // Fallback if reading body fails
+            throw new Error(`API error ${response.status}: ${response.statusText}`);
+        }
     }
     
     return response.json();
