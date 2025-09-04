@@ -4,7 +4,7 @@ export type Strain = {
     id: string;
     name: string;
     imageDataUrl?: string;
-    stockGrams: number;
+    currentStockG: number;
     thc: number; // percent 0-100
     cbd: number; // percent 0-100
     info: readonly string[];
@@ -43,7 +43,7 @@ export const StrainCard: React.FC<StrainCardProps> = ({ strain, selected, onSele
                     <div className="d-flex justify-content-between align-items-start">
                         <div>
                             <div className="fw-semibold text-dark-emphasis">{strain.name}</div>
-                            <div className="small text-secondary">Vorrätig: {strain.stockGrams.toFixed(1)} g</div>
+                            <div className="small text-secondary">Vorrätig: {strain.currentStockG.toFixed(1)} g</div>
                         </div>
                     </div>
 
