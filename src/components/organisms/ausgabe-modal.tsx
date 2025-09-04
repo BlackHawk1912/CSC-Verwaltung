@@ -29,7 +29,7 @@ const mockStrains: readonly Strain[] = [
     {
         id: "s-1",
         name: "Mooswald Indica",
-        stockGrams: 125.5,
+        currentStockG: 125.5,
         thc: 18,
         cbd: 2,
         info: ["Indica", "Indoor"],
@@ -38,7 +38,7 @@ const mockStrains: readonly Strain[] = [
     {
         id: "s-2",
         name: "Beige Sativa",
-        stockGrams: 78.2,
+        currentStockG: 78.2,
         thc: 20,
         cbd: 1,
         info: ["Sativa", "12 Wochen"],
@@ -47,7 +47,7 @@ const mockStrains: readonly Strain[] = [
     {
         id: "s-3",
         name: "Hybrid Classic",
-        stockGrams: 210.0,
+        currentStockG: 210.0,
         thc: 14,
         cbd: 5,
         info: ["Hybrid", "Outdoor"],
@@ -56,7 +56,7 @@ const mockStrains: readonly Strain[] = [
     {
         id: "s-4",
         name: "Alpen Haze",
-        stockGrams: 95.3,
+        currentStockG: 95.3,
         thc: 17,
         cbd: 3,
         info: ["Sativa", "Greenhouse"],
@@ -65,7 +65,7 @@ const mockStrains: readonly Strain[] = [
     {
         id: "s-5",
         name: "Stadtpark Kush",
-        stockGrams: 142.1,
+        currentStockG: 142.1,
         thc: 22,
         cbd: 0.5,
         info: ["Indica", "Indoor"],
@@ -74,7 +74,7 @@ const mockStrains: readonly Strain[] = [
     {
         id: "s-6",
         name: "Waldsee OG",
-        stockGrams: 60.0,
+        currentStockG: 60.0,
         thc: 8,
         cbd: 10,
         info: ["CBD-reich", "Hybrid"],
@@ -104,59 +104,59 @@ export const AusgabeModal: React.FC<AusgabeModalProps> = ({ open, onClose }) => 
     // Lade Sorten von der API, wenn das Modal geöffnet wird
     useEffect(() => {
         if (!open) return;
-        
+
         const fetchStrains = async () => {
             try {
                 setLoading(true);
                 setError(null);
                 const response = await api.getReadyBatches();
-                console.log('API Sorten geladen:', response);
-                
+                console.log("API Sorten geladen:", response);
+
                 // Verarbeite die API-Antwort und konvertiere sie in das Strain-Format
-                if (response && typeof response === 'object') {
+                if (response && typeof response === "object") {
                     // Prüfe, ob die Antwort in einem payload-Objekt verpackt ist
-                    const data = 'payload' in response ? (response as any).payload : response;
-                    
+                    const data = "payload" in response ? (response as any).payload : response;
+
                     if (Array.isArray(data)) {
                         // Konvertiere die API-Daten in das Strain-Format
                         const apiStrains: Strain[] = data.map((item: any, index: number) => {
                             // Wähle ein Bild basierend auf dem Index (zyklisch)
                             const images = [img1, img2, img3, img4, img5, img6];
                             const imageIndex = index % images.length;
-                            
+
                             return {
                                 id: item.id || item.batch || `api-${index}`,
                                 name: item.strain || `Sorte ${index + 1}`,
-                                stockGrams: item.stockGrams || item.weightMg / 1000 || 0,
+                                currentStockG: item.currentStockG || item.currentStockMg * 1000 || 0,
                                 thc: item.thc || 0,
                                 cbd: item.cbd || 0,
                                 info: item.info || item.tags || [],
-                                imageDataUrl: images[imageIndex]
+                                imageDataUrl: images[imageIndex],
                             };
                         });
                         setStrains(apiStrains);
                     } else {
-                        console.error('API-Antwort ist kein Array:', data);
-                        setError('Die API-Antwort hat ein unerwartetes Format');
+                        console.error("API-Antwort ist kein Array:", data);
+                        setError("Die API-Antwort hat ein unerwartetes Format");
                         // Fallback auf Mock-Daten, wenn die API-Antwort ungültig ist
                         setStrains([...mockStrains]);
                     }
                 } else {
-                    console.error('Ungültige API-Antwort:', response);
-                    setError('Die API-Antwort ist ungültig');
+                    console.error("Ungültige API-Antwort:", response);
+                    setError("Die API-Antwort ist ungültig");
                     // Fallback auf Mock-Daten, wenn die API-Antwort ungültig ist
                     setStrains([...mockStrains]);
                 }
             } catch (err) {
-                console.error('Fehler beim Laden der Sorten:', err);
-                setError('Fehler beim Laden der Sorten');
+                console.error("Fehler beim Laden der Sorten:", err);
+                setError("Fehler beim Laden der Sorten");
                 // Fallback auf Mock-Daten bei einem Fehler
                 setStrains([...mockStrains]);
             } finally {
                 setLoading(false);
             }
         };
-        
+
         fetchStrains();
     }, [open]);
 
@@ -167,9 +167,7 @@ export const AusgabeModal: React.FC<AusgabeModalProps> = ({ open, onClose }) => 
     const matches = useMemo(() => {
         const q = query.trim().toLowerCase();
         if (!q) return strains;
-        return strains.filter(
-            s => s.name.toLowerCase().includes(q) || s.info.some(i => i.toLowerCase().includes(q)),
-        );
+        return strains.filter(s => s.name.toLowerCase().includes(q) || s.info.some(i => i.toLowerCase().includes(q)));
     }, [query, strains]);
     // No dropdown suggestions; list filters live based on `query`.
 
@@ -254,7 +252,7 @@ export const AusgabeModal: React.FC<AusgabeModalProps> = ({ open, onClose }) => 
         if (!selected) return;
         const g = parseLocale(grams);
         if (!Number.isFinite(g) || g <= 0) return;
-        if (!member || member.trim() === '') return;
+        if (!member || member.trim() === "") return;
         if (!identification) return;
         try {
             await api.dispenseFromPlant(selected.id, { amount: g, under21, memberId: member.trim() });

@@ -4,7 +4,7 @@ export type Strain = {
     readonly id: string;
     readonly name: string;
     readonly imageDataUrl?: string;
-    readonly stockGrams: number;
+    readonly currentStockG: number;
     readonly thc: number;
     readonly cbd: number;
     readonly info: readonly string[];

@@ -141,7 +141,7 @@ export const StrainCard: React.FC<StrainCardProps> = ({ strain, selected, onSele
                     >
                         inventory_2
                     </span>
-                    {strain.stockGrams.toFixed(1)} g vorrätig
+                    {strain.currentStockG.toFixed(1)} g vorrätig
                 </span>
                 <div ref={textRef}>
                     <div className="d-flex justify-content-between align-items-start">
