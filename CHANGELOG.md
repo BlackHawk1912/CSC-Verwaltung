@@ -2,6 +2,9 @@
 
 ## [Unreleased]
 
+### Added
+- Feature: Rückverfolgung-Modal hinzugefügt, um Empfänger von Ausgaben einer bestimmten Sorte nachzuverfolgen. Zugänglich über einen neuen Button in der Statistik-Seite. Enthält eine Sortenliste links und eine Empfängerliste rechts sowie einen CSV-Export-Button (`src/components/organisms/rueckverfolgung-modal.tsx`, `src/pages/statistik-page.tsx`).
+
 ### Fixed
 - Statistik: Panels on statistics page were excessively tall. Removed `h-100` from stats cards in `src/pages/statistik-page.tsx` and set `grid-auto-rows: max-content` for `.stats-grid` in `src/App.css` to size rows by content.
 

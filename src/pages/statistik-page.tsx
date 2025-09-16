@@ -6,6 +6,7 @@ import type { ColumnDef } from "@tanstack/react-table";
 import { SimpleTable } from "../components/table/simple-table";
 import type { Disbursement, Gender } from "../types/domain";
 import { api } from "../services/api";
+import { RueckverfolgungModal } from "../components/organisms/rueckverfolgung-modal";
 
 const moss = "#355E3B";
 const mossLight = "#6f8f77";
@@ -73,6 +74,7 @@ export const StatistikPage: React.FC = () => {
     const [stats, setStats] = useState<StatisticsResponse | null>(null);
     const tableRef = useRef<HTMLDivElement | null>(null);
     const fadeWrapRef = useRef<HTMLDivElement | null>(null);
+    const [rueckverfolgungOpen, setRueckverfolgungOpen] = useState<boolean>(false);
     // Fetch statistics based on current range
     useFetchStats(range, setLoading, setStats);
     
@@ -346,137 +348,151 @@ export const StatistikPage: React.FC = () => {
     };
 
     return (
-        <div className="container-fluid py-3 d-grid gap-3">
-            <div className="d-flex justify-content-between align-items-center">
-                <h5 className="mb-0">Statistik</h5>
-                <div className="d-flex align-items-center gap-2">
-                    <button className="btn btn-outline-secondary btn-sm" onClick={() => window.print()}>
-                        Drucken
-                    </button>
-                    <button className="btn btn-success btn-sm" onClick={exportCsv}>
-                        Export CSV
-                    </button>
-                </div>
-            </div>
-
-            <div className="stats-grid">
-                <div className="glass-panel p-3 d-flex flex-column">
-                    <h6 className="mb-3">Geschlechterverteilung</h6>
-                    <div className="flex-grow-1 min-h-160">
-                        <PieChart labels={pieLabels} values={pieValues} colors={pieColors} />
+        <>
+            <div className="container-fluid py-3 d-grid gap-3">
+                <div className="d-flex justify-content-between align-items-center">
+                    <h5 className="mb-0">Statistik</h5>
+                    <div className="d-flex align-items-center gap-2">
+                        <button className="btn btn-outline-secondary btn-sm" onClick={() => window.print()}>
+                            Drucken
+                        </button>
+                        <button className="btn btn-outline-secondary btn-sm" onClick={() => setRueckverfolgungOpen(true)}>
+                            <span className="material-symbols-outlined me-1 align-middle" style={{ fontSize: 16 }}>
+                                person_search
+                            </span>
+                            Rückverfolgung
+                        </button>
+                        <button className="btn btn-success btn-sm" onClick={exportCsv}>
+                            Export CSV
+                        </button>
                     </div>
                 </div>
 
-                <div className="glass-panel p-3 d-flex flex-column">
-                    <h6 className="mb-3">Alter</h6>
-                    <div className="d-flex flex-column justify-content-center flex-grow-1">
-                        <div className="progress w-100" role="progressbar" aria-label="U21/Ü21">
-                            <div
-                                className="progress-bar separator-right"
-                                style={{ width: `${over21.noPct}%`, backgroundColor: beigeDark }}
-                            />
-                            <div
-                                className="progress-bar"
-                                style={{ width: `${over21.yesPct}%`, backgroundColor: moss }}
-                            />
-                        </div>
-                        <div className="d-flex justify-content-between small text-secondary mt-1">
-                            <span>{over21.noPct}% unter 21 </span>
-                            <span>{over21.yesPct}% über 21 </span>
+                <div className="stats-grid">
+                    <div className="glass-panel p-3 d-flex flex-column">
+                        <h6 className="mb-3">Geschlechterverteilung</h6>
+                        <div className="flex-grow-1 min-h-160">
+                            <PieChart labels={pieLabels} values={pieValues} colors={pieColors} />
                         </div>
                     </div>
-                </div>
 
-                <div className="glass-panel p-3 span-2 d-flex flex-column">
-                    <div className="d-flex justify-content-between align-items-center mb-3">
-                        <h6 className="mb-0">
-                            Gesamtmenge (Zeitraum){loading ? " …" : ""}:
-                            {stats && stats.total && stats.total.mg > 0 && (
-                                <span className="ms-2 text-success">
-                                    {formatGramsUi(stats.total.mg / 1000)}g
+                    <div className="glass-panel p-3 d-flex flex-column">
+                        <h6 className="mb-3">Alter</h6>
+                        <div className="d-flex flex-column justify-content-center flex-grow-1">
+                            <div className="progress w-100" role="progressbar" aria-label="U21/Ü21">
+                                <div
+                                    className="progress-bar separator-right"
+                                    style={{ width: `${over21.noPct}%`, backgroundColor: beigeDark }}
+                                />
+                                <div
+                                    className="progress-bar"
+                                    style={{ width: `${over21.yesPct}%`, backgroundColor: moss }}
+                                />
+                            </div>
+                            <div className="d-flex justify-content-between small text-secondary mt-1">
+                                <span>{over21.noPct}% unter 21 </span>
+                                <span>{over21.yesPct}% über 21 </span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="glass-panel p-3 span-2 d-flex flex-column">
+                        <div className="d-flex justify-content-between align-items-center mb-3">
+                            <h6 className="mb-0">
+                                Gesamtmenge (Zeitraum){loading ? " …" : ""}:
+                                {stats && stats.total && stats.total.mg > 0 && (
+                                    <span className="ms-2 text-success">
+                                        {formatGramsUi(stats.total.mg / 1000)}g
+                                    </span>
+                                )}
+                            </h6>
+                            <select
+                                className="form-select form-select-sm w-auto"
+                                value={range}
+                                onChange={e => setRange(e.target.value as "24h" | "7d" | "4w")}
+                            >
+                                <option value="24h">Letzte 24h</option>
+                                <option value="7d">7 Tage</option>
+                                <option value="4w">4 Wochen</option>
+                            </select>
+                        </div>
+                        <div className="flex-grow-1 min-h-200">
+                            <LineChart labels={lineData.labels} datasets={lineDatasets} />
+                        </div>
+                    </div>
+
+                    <div className="glass-panel p-3 d-flex flex-column">
+                        <h6 className="mb-3">
+                            ⌀ Ausgaben pro Wochentag
+                            {range === "7d" && ((stats as any)?.total?.mg ?? 0) > 0 && (
+                                <span className="ms-2 small text-success">
+                                    (Echte Daten)
                                 </span>
                             )}
                         </h6>
-                        <select
-                            className="form-select form-select-sm w-auto"
-                            value={range}
-                            onChange={e => setRange(e.target.value as "24h" | "7d" | "4w")}
-                        >
-                            <option value="24h">Letzte 24h</option>
-                            <option value="7d">7 Tage</option>
-                            <option value="4w">4 Wochen</option>
-                        </select>
+                        <div className="flex-grow-1 min-h-160">
+                            <BarChart labels={weekdays} values={weekdayAverages} color={moss} />
+                        </div>
                     </div>
-                    <div className="flex-grow-1 min-h-200">
-                        <LineChart labels={lineData.labels} datasets={lineDatasets} />
-                    </div>
-                </div>
 
-                <div className="glass-panel p-3 d-flex flex-column">
-                    <h6 className="mb-3">
-                        ⌀ Ausgaben pro Wochentag
-                        {range === "7d" && ((stats as any)?.total?.mg ?? 0) > 0 && (
-                            <span className="ms-2 small text-success">
-                                (Echte Daten)
-                            </span>
-                        )}
-                    </h6>
-                    <div className="flex-grow-1 min-h-160">
-                        <BarChart labels={weekdays} values={weekdayAverages} color={moss} />
-                    </div>
-                </div>
-
-                <div className="glass-panel p-3 span-2">
-                    <h6 className="mb-3">
-                        Heutige Ausgaben
-                        {loading && <span className="ms-2 small">…</span>}
-                        {!loading && !stats && (
-                            <span className="ms-2 small text-danger">
-                                (Keine Daten verfügbar)
-                            </span>
-                        )}
-                    </h6>
-                    <div ref={fadeWrapRef} className="position-relative fade-container">
-                        {loading ? (
-                            <div className="text-center py-4 text-secondary">
-                                <div className="spinner-border spinner-border-sm me-2" role="status">
-                                    <span className="visually-hidden">Wird geladen...</span>
-                                </div>
-                                Daten werden geladen...
-                            </div>
-                        ) : stats && stats.total && stats.total.count > 0 ? (
-                            <SimpleTable
-                                data={[
-                                    {
-                                        id: '1',
-                                        strainId: 'api-1',
-                                        strainName: 'Verschiedene Sorten',
-                                        time: new Date().toLocaleTimeString('de-DE'),
-                                        grams: stats.total.mg / 1000,
-                                        over21: true,
-                                        gender: 'na' as Gender,
-                                        dateIso: new Date().toISOString().split('T')[0]
-                                    }
-                                ]}
-                                columns={columns}
-                                containerClassName="custom-scroll max-h-380 overflow-auto"
-                                onContainerScroll={onScroll}
-                                onContainerRef={el => (tableRef.current = el)}
-                            />
-                        ) : (
-                            <div className="text-center py-4 text-secondary">
-                                <span className="material-symbols-outlined d-block mb-2" style={{ fontSize: '32px' }}>
-                                    info
+                    <div className="glass-panel p-3 span-2">
+                        <h6 className="mb-3">
+                            Heutige Ausgaben
+                            {loading && <span className="ms-2 small">…</span>}
+                            {!loading && !stats && (
+                                <span className="ms-2 small text-danger">
+                                    (Keine Daten verfügbar)
                                 </span>
-                                Keine Daten verfügbar
-                            </div>
-                        )}
-                        <div className="fade-overlay-top" />
-                        <div className="fade-overlay-bottom" />
+                            )}
+                        </h6>
+                        <div ref={fadeWrapRef} className="position-relative fade-container">
+                            {loading ? (
+                                <div className="text-center py-4 text-secondary">
+                                    <div className="spinner-border spinner-border-sm me-2" role="status">
+                                        <span className="visually-hidden">Wird geladen...</span>
+                                    </div>
+                                    Daten werden geladen...
+                                </div>
+                            ) : stats && stats.total && stats.total.count > 0 ? (
+                                <SimpleTable
+                                    data={[
+                                        {
+                                            id: '1',
+                                            strainId: 'api-1',
+                                            strainName: 'Verschiedene Sorten',
+                                            time: new Date().toLocaleTimeString('de-DE'),
+                                            grams: stats.total.mg / 1000,
+                                            over21: true,
+                                            gender: 'na' as Gender,
+                                            dateIso: new Date().toISOString().split('T')[0]
+                                        }
+                                    ]}
+                                    columns={columns}
+                                    containerClassName="custom-scroll max-h-380 overflow-auto"
+                                    onContainerScroll={onScroll}
+                                    onContainerRef={el => (tableRef.current = el)}
+                                />
+                            ) : (
+                                <div className="text-center py-4 text-secondary">
+                                    <span className="material-symbols-outlined d-block mb-2" style={{ fontSize: '32px' }}>
+                                        info
+                                    </span>
+                                    Keine Daten verfügbar
+                                </div>
+                            )}
+                            <div className="fade-overlay-top" />
+                            <div className="fade-overlay-bottom" />
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
+            
+            {/* Rückverfolgung Modal */}
+            <RueckverfolgungModal 
+                open={rueckverfolgungOpen} 
+                onClose={() => setRueckverfolgungOpen(false)} 
+            />
+        </>
     );
 };
 
