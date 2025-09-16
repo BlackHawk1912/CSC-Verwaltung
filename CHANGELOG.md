@@ -2,6 +2,9 @@
 
 ## [Unreleased]
 
+### Fixed
+- Statistik: Panels on statistics page were excessively tall. Removed `h-100` from stats cards in `src/pages/statistik-page.tsx` and set `grid-auto-rows: max-content` for `.stats-grid` in `src/App.css` to size rows by content.
+
 - Dev: Vite-Proxy um Authentifizierung (Benutzername/Passwort) erweitert. Nutzt `VITE_API_USERNAME` und `VITE_API_PASSWORD` Umgebungsvariablen für die API-Authentifizierung.
 
 - UI: Ausgabe-Modal – Während des Speichervorgangs sind „Speichern“, „Abbrechen“ und das Schließen-Icon deaktiviert; der „Speichern“-Button zeigt einen Loading-Spinner. Serverfehler werden als Alert im Modal angezeigt.

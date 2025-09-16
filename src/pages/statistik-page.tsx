@@ -360,14 +360,14 @@ export const StatistikPage: React.FC = () => {
             </div>
 
             <div className="stats-grid">
-                <div className="glass-panel p-3 h-100 d-flex flex-column">
+                <div className="glass-panel p-3 d-flex flex-column">
                     <h6 className="mb-3">Geschlechterverteilung</h6>
                     <div className="flex-grow-1 min-h-160">
                         <PieChart labels={pieLabels} values={pieValues} colors={pieColors} />
                     </div>
                 </div>
 
-                <div className="glass-panel p-3 h-100 d-flex flex-column">
+                <div className="glass-panel p-3 d-flex flex-column">
                     <h6 className="mb-3">Alter</h6>
                     <div className="d-flex flex-column justify-content-center flex-grow-1">
                         <div className="progress w-100" role="progressbar" aria-label="U21/Ü21">
@@ -412,7 +412,7 @@ export const StatistikPage: React.FC = () => {
                     </div>
                 </div>
 
-                <div className="glass-panel p-3 h-100 d-flex flex-column">
+                <div className="glass-panel p-3 d-flex flex-column">
                     <h6 className="mb-3">
                         ⌀ Ausgaben pro Wochentag
                         {range === "7d" && ((stats as any)?.total?.mg ?? 0) > 0 && (

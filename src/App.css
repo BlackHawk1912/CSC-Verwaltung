@@ -310,6 +310,7 @@ textarea::placeholder,
 .stats-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    grid-auto-rows: max-content;
     gap: 16px;
     align-content: start;
     grid-auto-flow: dense;
