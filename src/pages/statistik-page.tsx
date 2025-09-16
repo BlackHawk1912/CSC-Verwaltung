@@ -1,7 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { PieChart } from "../components/charts/pie-chart";
 import { LineChart } from "../components/charts/line-chart";
-import { BarChart } from "../components/charts/bar-chart";
 import type { ColumnDef } from "@tanstack/react-table";
 import { SimpleTable } from "../components/table/simple-table";
 import type { Disbursement, Gender } from "../types/domain";
@@ -65,7 +64,7 @@ function createColumns(): readonly ColumnDef<Disbursement>[] {
 
 // Keine Beispieldaten mehr - wir verwenden nur noch API-Daten
 
-const weekdays = ["Mo", "Di", "Mi", "Do", "Fr", "Sa", "So"] as const;
+// Removed weekdays constant
 
 export const StatistikPage: React.FC = () => {
     console.log("🔄 StatistikPage rendering");
@@ -245,15 +244,7 @@ export const StatistikPage: React.FC = () => {
         return { labels, total, u21, mwdM, mwdW, mwdD };
     }, [range, stats]);
 
-    // Berechne durchschnittliche Ausgaben pro Wochentag basierend auf API-Daten
-    const weekdayAverages = useMemo(() => {
-        // Wenn wir API-Daten haben und im 7-Tage-Modus sind, nutzen wir die Daten aus lineData
-        if (range === "7d" && ((stats as any)?.total?.mg ?? 0) > 0) {
-            return lineData.total;
-        }
-        // Ansonsten Fallback auf leere Daten
-        return [0, 0, 0, 0, 0, 0, 0];
-    }, [range, stats, lineData]);
+    // Removed weekdayAverages calculation
 
     // Memoize chart props so they remain referentially stable across unrelated rerenders (e.g., modal open/close)
     const pieLabels = useMemo(() => ["männlich", "weiblich", "divers"] as const, []);
@@ -421,19 +412,7 @@ export const StatistikPage: React.FC = () => {
                         </div>
                     </div>
 
-                    <div className="glass-panel p-3 d-flex flex-column">
-                        <h6 className="mb-3">
-                            ⌀ Ausgaben pro Wochentag
-                            {range === "7d" && ((stats as any)?.total?.mg ?? 0) > 0 && (
-                                <span className="ms-2 small text-success">
-                                    (Echte Daten)
-                                </span>
-                            )}
-                        </h6>
-                        <div className="flex-grow-1 min-h-160">
-                            <BarChart labels={weekdays} values={weekdayAverages} color={moss} />
-                        </div>
-                    </div>
+                    {/* Removed 'Durchschnittliche Ausgaben pro Wochentag' section */}
 
                     <div className="glass-panel p-3 span-2">
                         <h6 className="mb-3">
