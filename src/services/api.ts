@@ -81,7 +81,12 @@ export type HarvestInput = { readonly harvestWeightMg: number };
 export type FinalizeDryingInput = { readonly dryingWeightMg: number };
 export type AnalysisInput = { readonly thc: number; readonly cbd: number; readonly reportB64: string };
 export type DepreciateInput = { readonly reason: string; readonly sign1: string; readonly sign2: string };
-export type PlantDispenseInput = { readonly amount: number; readonly under21: boolean; readonly memberId: string };
+export type PlantDispenseInput = { 
+    readonly gramsMg: number; 
+    readonly memberUuid: string; 
+    readonly iddoc: string;
+    readonly under21?: boolean; // Optional, da nicht mehr benötigt
+};
 
 // Dispensing
 export type CreateDispenseInput = {
@@ -96,6 +101,7 @@ export type CreateDispenseInput = {
 };
 
 export type StatisticsQuery = { readonly start: string; readonly end: string };
+export type StatisticsByDayQuery = { readonly startIso: string; readonly endIso: string };
 
 // Members
 export type MemberAddress = {
@@ -138,8 +144,18 @@ export const api = {
         fetchJson<unknown>({ url: `/plants/${batch}/analysis`, method: "POST", body, useDirect: USE_DIRECT_API }),
     depreciatePlant: (batch: string, body: DepreciateInput) =>
         fetchJson<unknown>({ url: `/plants/${batch}/depreciate`, method: "POST", body, useDirect: USE_DIRECT_API }),
-    dispenseFromPlant: (batch: string, body: PlantDispenseInput) =>
-        fetchJson<unknown>({ url: `/plants/${batch}/dispense`, method: "POST", body, useDirect: USE_DIRECT_API }),
+    dispenseFromPlant: (batchId: string, body: PlantDispenseInput) =>
+        fetchJson<unknown>({ 
+            url: `/dispense`, 
+            method: "POST", 
+            body: {
+                ...body,
+                batchId,
+                operator: "Karl", // Hardcoded wie angefordert
+                sign: "HEINZ" // Optional, aber hinzugefügt wie angefordert
+            }, 
+            useDirect: USE_DIRECT_API 
+        }),
     getReadyBatches: () => 
         fetchJson<unknown>({ url: "/plants/ready", useDirect: USE_DIRECT_API }),
     getPlant: (batch: string) => 
@@ -152,9 +168,15 @@ export const api = {
         fetchJson<unknown>({ url: "/dispense", method: "POST", body, useDirect: USE_DIRECT_API }),
     getStatistics: (q: StatisticsQuery) => 
         fetchJson<unknown>({ url: `/dispense/statistics${toQuery(q)}`, useDirect: USE_DIRECT_API }),
+    // List of disbursements grouped by day (used for today's list and selected range totals)
+    getStatisticsByDay: (q: StatisticsByDayQuery) =>
+        fetchJson<unknown>({ url: `/dispense/statistics/byDay${toQuery(q)}`, useDirect: USE_DIRECT_API }),
     // Verwende immer den Proxy für die Statistik-Daten
     getStatisticsExtended: (q: StatisticsQuery) =>
         fetchJson<unknown>({ url: `/dispense/statistics/extended${toQuery(q)}`, useDirect: false }),
+    // Rückverfolgung: Empfänger einer bestimmten Sorte finden
+    findRecipientsByBatch: (batchId: string) =>
+        fetchJson<unknown>({ url: `/dispense/findByBatch?batchId=${batchId}`, useDirect: USE_DIRECT_API }),
 
     // Members
     createMember: (body: MemberCreateInput) => 

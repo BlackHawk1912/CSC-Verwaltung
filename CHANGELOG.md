@@ -3,16 +3,31 @@
 ## [Unreleased]
 
 ### Added
+- Feature: Statistik-Seite aktualisiert, um das neue API-Datenformat mit aggregierten Statistiken zu unterstützen. Die Seite zeigt jetzt eine Zusammenfassung der Daten an, wenn keine detaillierten Transaktionsdaten verfügbar sind (`src/pages/statistik-page.tsx`, `src/types/domain.ts`).
 - Feature: Rückverfolgung-Modal hinzugefügt, um Empfänger von Ausgaben einer bestimmten Sorte nachzuverfolgen. Zugänglich über einen neuen Button in der Statistik-Seite. Enthält eine Sortenliste links und eine Empfängerliste rechts sowie einen CSV-Export-Button (`src/components/organisms/rueckverfolgung-modal.tsx`, `src/pages/statistik-page.tsx`).
 
+- Feature: Rückverfolgung-Modal nutzt jetzt die echte API-Route `/dispense/findByBatch?batchId={BATCH}` statt Mock-Daten. Implementiert Lade- und Fehleranzeigen für Sorten und Empfänger getrennt. Konvertiert API-Antwort in das Recipient-Format für die Anzeige. Telefonspalte entfernt, da diese Information nicht in der API enthalten ist (`src/components/organisms/rueckverfolgung-modal.tsx`, `src/services/api.ts`).
+
+- Feature: Statistik-Seite aktualisiert, um neues API-Datenformat mit einzelnen Ausgabeeinträgen zu unterstützen. Tagesausgaben-Tabelle zeigt nun individuelle Einträge mit Datum, Uhrzeit, Menge, Ü21-Status und Geschlecht an (`src/pages/statistik-page.tsx`, `src/types/domain.ts`).
+
+- Feature: SimpleTable-Komponente um initiale Sortierungsunterstützung erweitert, um Tabellendaten standardmäßig nach Zeitstempel absteigend zu sortieren (`src/components/table/simple-table.tsx`).
+
+- Feature: Durchschnittliche Ausgaben pro Wochentag-Diagramm entfernt, um Platz für wichtigere Informationen zu schaffen.
+
+- Feature: Ausgabe-Modal überarbeitet - "Unter 21 Jahre"-Checkbox entfernt, da nicht mehr benötigt. Identifikationsnachweis-Dropdown wird jetzt korrekt in der API-Anfrage als `iddoc`-Feld mit den Werten "idcard", "membercard" oder "personal-known" übermittelt. Mengenangabe wird nun korrekt von Gramm in Milligramm umgerechnet (1g = 1000mg) für die API-Anfrage. API-Aufruf auf neue Struktur umgestellt: POST an `/dispense` mit Batch-ID im Body statt in der URL, Feldnamen angepasst und feste Werte für Operator und Signatur hinzugefügt (`src/components/organisms/ausgabe-modal.tsx`, `src/services/api.ts`).
+
 ### Fixed
+- Statistik: Auf Basis-Endpunkt gewechselt (`/dispense/statistics`) statt Extended. Aggregierte Daten reichen aus; keine Abhängigkeit mehr von extended Feldern. (`src/pages/statistik-page.tsx`)
+- Statistik: Integration der neuen byDay-API (`/dispense/statistics/byDay`) für zwei getrennte Abrufe:
+  - Heutige Ausgaben: nur heutiges Datum (startIso=today, endIso=tomorrow) als echte Liste in der Tabelle.
+  - Gesamtmenge (Zeitraum): Summe ausschließlich aus der byDay-Liste des gewählten Zeitraums (Dropdown). Keine Beispieldaten mehr im Chart/Kennzahl. (`src/services/api.ts`, `src/pages/statistik-page.tsx`)
 - Statistik: Panels on statistics page were excessively tall. Removed `h-100` from stats cards in `src/pages/statistik-page.tsx` and set `grid-auto-rows: max-content` for `.stats-grid` in `src/App.css` to size rows by content.
 
 - Dev: Vite-Proxy um Authentifizierung (Benutzername/Passwort) erweitert. Nutzt `VITE_API_USERNAME` und `VITE_API_PASSWORD` Umgebungsvariablen für die API-Authentifizierung.
 
 - UI: Ausgabe-Modal – Während des Speichervorgangs sind „Speichern“, „Abbrechen“ und das Schließen-Icon deaktiviert; der „Speichern“-Button zeigt einen Loading-Spinner. Serverfehler werden als Alert im Modal angezeigt.
 
-- Feature: Add typed API client covering all endpoints from Postman collection in `src/services/api.ts` (plants lifecycle, dispensing, members). Uses `VITE_API_URL` as base and RO-RO helpers.
+- Feature: Add typed API client covering all endpoints from Postman collection in `src/services/api.ts` (plants lifecycle, dispensing, members). Uses `VITE_API_URL` as base and RO-RO helpers. Erweitert um neue Methode `findRecipientsByBatch` für die Rückverfolgung von Ausgaben.
 
 - Feature: Statistik lädt Kennzahlen aus der API basierend auf gewähltem Zeitraum (`src/pages/statistik-page.tsx`). Charts nutzen API-Daten mit Fallbacks; Tabelle "Heutige Ausgaben" zeigt API-Daten an.
 

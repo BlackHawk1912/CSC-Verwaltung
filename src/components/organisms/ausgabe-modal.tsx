@@ -87,7 +87,6 @@ export const AusgabeModal: React.FC<AusgabeModalProps> = ({ open, onClose }) => 
     const [grams, setGrams] = useState<string>("");
     const [member, setMember] = useState<string>("");
     const [identification, setIdentification] = useState<string>("");
-    const [under21, setUnder21] = useState<boolean>(false);
     const [query, setQuery] = useState<string>("");
     const [mounted, setMounted] = useState<boolean>(false);
     const [leaving, setLeaving] = useState<boolean>(false);
@@ -260,7 +259,30 @@ export const AusgabeModal: React.FC<AusgabeModalProps> = ({ open, onClose }) => 
         setSubmitError(null);
         setSubmitting(true);
         try {
-            await api.dispenseFromPlant(selected.id, { amount: g, under21, memberId: member.trim() });
+            // Konvertiere die Identifikationswerte in die API-Werte
+            let iddocValue = "";
+            switch(identification) {
+                case "persönlich bekannt":
+                    iddocValue = "personal-known";
+                    break;
+                case "amtliches Dokument":
+                    iddocValue = "idcard";
+                    break;
+                case "mitgliedsausweis":
+                    iddocValue = "membercard";
+                    break;
+                default:
+                    iddocValue = "idcard"; // Fallback
+            }
+            
+            // Umrechnung von Gramm in Milligramm (1g = 1000mg)
+            const gramsMg = g * 1000;
+            
+            await api.dispenseFromPlant(selected.id, { 
+                gramsMg, 
+                memberUuid: member.trim(),
+                iddoc: iddocValue
+            });
             onClose();
         } catch (e: unknown) {
             console.error(e);
@@ -435,18 +457,6 @@ export const AusgabeModal: React.FC<AusgabeModalProps> = ({ open, onClose }) => 
                             </select>
                         </div>
 
-                        <div className="form-check mb-3">
-                            <input
-                                className="form-check-input"
-                                type="checkbox"
-                                id="under21Check"
-                                checked={under21}
-                                onChange={e => setUnder21(e.target.checked)}
-                            />
-                            <label className="form-check-label" htmlFor="under21Check">
-                                Unter 21 Jahre
-                            </label>
-                        </div>
 
                         <div className="mb-3">
                             <label className="form-label">Auswahl</label>

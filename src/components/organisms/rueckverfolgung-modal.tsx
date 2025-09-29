@@ -18,49 +18,41 @@ export type RueckverfolgungModalProps = {
 export type Recipient = {
     id: string; // UUID
     name: string;
-    phone: string;
     date: string; // Datum der Ausgabe
     amount: number; // Menge in Gramm
 };
 
-// Mock-Daten für Empfänger
-const mockRecipients: readonly Recipient[] = [
-    {
-        id: "p-1",
-        name: "Max Mustermann",
-        phone: "0123-4567890",
-        date: "2025-09-15",
-        amount: 2.5,
-    },
-    {
-        id: "p-2",
-        name: "Erika Musterfrau",
-        phone: "0123-9876543",
-        date: "2025-09-14",
-        amount: 3.0,
-    },
-    {
-        id: "p-3",
-        name: "Alex Diverse",
-        phone: "0123-1234567",
-        date: "2025-09-13",
-        amount: 1.5,
-    },
-    {
-        id: "p-4",
-        name: "Maria Schmidt",
-        phone: "0123-2345678",
-        date: "2025-09-12",
-        amount: 2.0,
-    },
-    {
-        id: "p-5",
-        name: "Thomas Müller",
-        phone: "0123-3456789",
-        date: "2025-09-11",
-        amount: 2.5,
-    },
-];
+// Typ für die API-Antwort von /dispense/findByBatch
+export type DispenseRecord = {
+    batchId: string;
+    gender: "m" | "w" | "d";
+    gramsMg: number;
+    iddoc: string;
+    key: string;
+    memberUuid: string;
+    operator: string;
+    sign: string;
+    thc: number;
+    timestamp: string;
+    type: string;
+    under21: boolean;
+};
+
+// Konvertiert DispenseRecord zu Recipient
+const dispenseRecordToRecipient = (record: DispenseRecord): Recipient => {
+    // Konvertiere Milligramm zu Gramm
+    const amount = record.gramsMg / 1000;
+    
+    // Formatiere das Datum aus dem ISO-String
+    const date = new Date(record.timestamp).toLocaleDateString("de-DE");
+    
+    return {
+        id: record.key,
+        name: `Mitglied ${record.memberUuid}`, // Wir haben keinen Namen in der API-Antwort
+        date,
+        amount,
+    };
+};
 
 // Dieselben Mock-Sorten wie in ausgabe-modal.tsx
 const mockStrains: readonly Strain[] = [
@@ -130,9 +122,11 @@ export const RueckverfolgungModal: React.FC<RueckverfolgungModalProps> = ({ open
     const [atBottom, setAtBottom] = useState(false);
     const [animateList, setAnimateList] = useState(false);
     const [strains, setStrains] = useState<Strain[]>([]);
-    const [loading, setLoading] = useState<boolean>(false);
-    const [error, setError] = useState<string | null>(null);
+    const [strainsLoading, setStrainsLoading] = useState<boolean>(false);
+    const [strainsError, setStrainsError] = useState<string | null>(null);
     const [recipients, setRecipients] = useState<Recipient[]>([]);
+    const [recipientsLoading, setRecipientsLoading] = useState<boolean>(false);
+    const [recipientsError, setRecipientsError] = useState<string | null>(null);
 
     // Lade Sorten von der API, wenn das Modal geöffnet wird
     useEffect(() => {
@@ -140,8 +134,8 @@ export const RueckverfolgungModal: React.FC<RueckverfolgungModalProps> = ({ open
 
         const fetchStrains = async () => {
             try {
-                setLoading(true);
-                setError(null);
+                setStrainsLoading(true);
+                setStrainsError(null);
                 const response = await api.getReadyBatches();
                 console.log("API Sorten geladen:", response);
 
@@ -170,30 +164,63 @@ export const RueckverfolgungModal: React.FC<RueckverfolgungModalProps> = ({ open
                         setStrains(apiStrains);
                     } else {
                         console.error("API-Antwort ist kein Array:", data);
-                        setError("Die API-Antwort hat ein unerwartetes Format");
+                        setStrainsError("Die API-Antwort hat ein unerwartetes Format");
                         // Fallback auf Mock-Daten, wenn die API-Antwort ungültig ist
                         setStrains([...mockStrains]);
                     }
                 } else {
                     console.error("Ungültige API-Antwort:", response);
-                    setError("Die API-Antwort ist ungültig");
+                    setStrainsError("Die API-Antwort ist ungültig");
                     // Fallback auf Mock-Daten, wenn die API-Antwort ungültig ist
                     setStrains([...mockStrains]);
                 }
             } catch (err) {
                 console.error("Fehler beim Laden der Sorten:", err);
-                setError("Fehler beim Laden der Sorten");
+                setStrainsError("Fehler beim Laden der Sorten");
                 // Fallback auf Mock-Daten bei einem Fehler
                 setStrains([...mockStrains]);
             } finally {
-                setLoading(false);
+                setStrainsLoading(false);
             }
         };
 
         fetchStrains();
-        // Lade Mock-Empfänger für die Demo
-        setRecipients([...mockRecipients]);
     }, [open]);
+    
+    // Lade Empfänger für die ausgewählte Sorte, wenn eine ausgewählt wird
+    useEffect(() => {
+        if (!selectedId) {
+            setRecipients([]);
+            return;
+        }
+
+        const fetchRecipients = async () => {
+            try {
+                setRecipientsLoading(true);
+                setRecipientsError(null);
+                const response = await api.findRecipientsByBatch(selectedId);
+                console.log("API Empfänger geladen:", response);
+
+                if (response && Array.isArray(response)) {
+                    // Konvertiere die API-Antwort in das Recipient-Format
+                    const apiRecipients = response.map((item: DispenseRecord) => dispenseRecordToRecipient(item));
+                    setRecipients(apiRecipients);
+                } else {
+                    console.error("API-Antwort ist kein Array:", response);
+                    setRecipientsError("Die API-Antwort hat ein unerwartetes Format");
+                    setRecipients([]);
+                }
+            } catch (err) {
+                console.error("Fehler beim Laden der Empfänger:", err);
+                setRecipientsError("Fehler beim Laden der Empfänger");
+                setRecipients([]);
+            } finally {
+                setRecipientsLoading(false);
+            }
+        };
+
+        fetchRecipients();
+    }, [selectedId]);
 
     const selected = useMemo(() => strains.find(s => s.id === selectedId) || null, [selectedId, strains]);
 
@@ -270,8 +297,8 @@ export const RueckverfolgungModal: React.FC<RueckverfolgungModalProps> = ({ open
         if (!selected) return;
         
         const rows = [
-            ["Name", "Telefon", "Datum", "Menge (g)"],
-            ...recipients.map(r => [r.name, r.phone, r.date, r.amount.toFixed(2)]),
+            ["Name", "Datum", "Menge (g)"],
+            ...recipients.map(r => [r.name, r.date, r.amount.toFixed(2)]),
         ] as const;
         
         const csv = rows
@@ -360,16 +387,16 @@ export const RueckverfolgungModal: React.FC<RueckverfolgungModalProps> = ({ open
                                 onScroll={onScroll}
                                 className={`strain-grid custom-scroll ${animateList ? "animate-appear" : ""} p-3 h-60vh overflow-auto`}
                             >
-                                {loading ? (
+                                {strainsLoading ? (
                                     <div className="d-flex justify-content-center align-items-center h-100">
                                         <div className="spinner-border text-success" role="status">
                                             <span className="visually-hidden">Lade Sorten...</span>
                                         </div>
                                     </div>
-                                ) : error ? (
+                                ) : strainsError ? (
                                     <div className="alert alert-warning m-3" role="alert">
                                         <span className="material-symbols-outlined me-2 align-middle">warning</span>
-                                        {error}
+                                        {strainsError}
                                     </div>
                                 ) : matches.length === 0 ? (
                                     <div className="alert alert-info m-3" role="alert">
@@ -397,12 +424,22 @@ export const RueckverfolgungModal: React.FC<RueckverfolgungModalProps> = ({ open
                             <label className="form-label">Empfänger</label>
                             {selected ? (
                                 <div className="recipient-list custom-scroll h-40vh overflow-auto p-2 border rounded">
-                                    {recipients.length > 0 ? (
+                                    {recipientsLoading ? (
+                                        <div className="d-flex justify-content-center align-items-center h-100">
+                                            <div className="spinner-border text-success" role="status">
+                                                <span className="visually-hidden">Lade Empfänger...</span>
+                                            </div>
+                                        </div>
+                                    ) : recipientsError ? (
+                                        <div className="alert alert-warning m-3" role="alert">
+                                            <span className="material-symbols-outlined me-2 align-middle">warning</span>
+                                            {recipientsError}
+                                        </div>
+                                    ) : recipients.length > 0 ? (
                                         <table className="table table-sm">
                                             <thead>
                                                 <tr>
                                                     <th>Name</th>
-                                                    <th>Telefon</th>
                                                     <th>Datum</th>
                                                     <th>Menge</th>
                                                 </tr>
@@ -411,7 +448,6 @@ export const RueckverfolgungModal: React.FC<RueckverfolgungModalProps> = ({ open
                                                 {recipients.map(recipient => (
                                                     <tr key={recipient.id}>
                                                         <td>{recipient.name}</td>
-                                                        <td>{recipient.phone}</td>
                                                         <td>{recipient.date}</td>
                                                         <td>{recipient.amount.toFixed(2)}g</td>
                                                     </tr>

@@ -10,6 +10,7 @@ export type SimpleTableProps<T> = {
     containerClassName?: string;
     onContainerScroll?: (e: UIEvent<HTMLDivElement>) => void;
     onContainerRef?: (el: HTMLDivElement | null) => void;
+    initialSorting?: SortingState;
 };
 
 export function SimpleTable<T>({
@@ -19,8 +20,9 @@ export function SimpleTable<T>({
     containerClassName,
     onContainerScroll,
     onContainerRef,
+    initialSorting = [],
 }: SimpleTableProps<T>) {
-    const [sorting, setSorting] = useState<SortingState>([]);
+    const [sorting, setSorting] = useState<SortingState>(initialSorting);
     const table = useReactTable<T>({
         data: data as T[],
         columns: columns as ColumnDef<T, unknown>[],
