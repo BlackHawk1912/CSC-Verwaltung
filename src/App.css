@@ -316,6 +316,12 @@ textarea::placeholder,
     grid-auto-flow: dense;
 }
 
+/* Ensure chart containers don't grow beyond reasonable heights */
+.stats-grid .glass-panel .flex-grow-1 {
+    max-height: 300px;
+    overflow: hidden;
+}
+
 /* Simple span utility for larger widgets */
 .span-2 {
     grid-column: span 2;
@@ -435,24 +441,23 @@ textarea::placeholder,
 }
 
 /* Utilities */
-.h-60vh {
+ .h-60vh {
     height: 60vh;
-}
-.min-h-160 {
+ }
+ .min-h-160 {
+    min-height: 120px;
+ }
+ .min-h-200 {
     min-height: 160px;
-}
-.min-h-200 {
-    min-height: 200px;
-}
-.max-h-380 {
+ }
+ .max-h-380 {
     max-height: 380px;
-}
+ }
 
 /* Modal sizing and layout */
 .modal-surface {
     width: min(1280px, 98vw);
     height: auto;
-    max-height: 88vh;
     display: flex;
     flex-direction: column;
     overflow: hidden;

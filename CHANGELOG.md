@@ -22,6 +22,8 @@
   - Heutige Ausgaben: nur heutiges Datum (startIso=today, endIso=tomorrow) als echte Liste in der Tabelle.
   - Gesamtmenge (Zeitraum): Summe ausschließlich aus der byDay-Liste des gewählten Zeitraums (Dropdown). Keine Beispieldaten mehr im Chart/Kennzahl. (`src/services/api.ts`, `src/pages/statistik-page.tsx`)
 - Statistik: Panels on statistics page were excessively tall. Removed `h-100` from stats cards in `src/pages/statistik-page.tsx` and set `grid-auto-rows: max-content` for `.stats-grid` in `src/App.css` to size rows by content.
+ - Statistik: Reduce chart container min-heights to shrink cards. Changed `.min-h-160` to 120px and `.min-h-200` to 160px in `src/App.css`; affects Pie and Line chart sections in `src/pages/statistik-page.tsx`.
+- Statistik: Fixed chart containers growing taller with each time range switch by adding a max-height constraint to chart containers in `.stats-grid` to prevent unbounded growth.
 
 - Dev: Vite-Proxy um Authentifizierung (Benutzername/Passwort) erweitert. Nutzt `VITE_API_USERNAME` und `VITE_API_PASSWORD` Umgebungsvariablen für die API-Authentifizierung.
 
